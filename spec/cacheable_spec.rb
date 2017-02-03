@@ -15,6 +15,11 @@ describe RubygemDigger::Cacheable do
 
   describe 'an object' do
     subject {Mcacheable.new}
+
+    context 'when the ojbect is cached' do
+      before {subject.cache}
+      it {is_expected.to eq MayCacheable}
+    end
   end
 
 end

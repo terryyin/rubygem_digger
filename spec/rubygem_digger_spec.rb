@@ -26,7 +26,7 @@ describe RubygemDigger do
 
   describe 'system' do
     subject {RubygemDigger::GemsSpecs.new "/Users/terry/git/gems/"}
-    it {expect(subject.frequent_than(20).count).to eq 17802}
+    xit {expect(subject.frequent_than(20).count).to eq 17802}
     xit {
       time = Time.utc(2015, 1, 1)
       subject.frequent_than(50).remove_unstable
