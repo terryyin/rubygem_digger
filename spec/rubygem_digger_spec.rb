@@ -9,18 +9,8 @@ describe RubygemDigger do
 
   describe RubygemDigger::GemsSpecs do
     subject {RubygemDigger::GemsSpecs.new data_path}
-    its(:count) {is_expected.to eq 126828}
-    it {expect(subject.frequent_than(10).count).to eq 17802}
-
-    context 'after load gems' do
-      its(:count) {is_expected.to eq 1}
-    end
-  end
-
-  describe RubygemDigger::GemHistory do
-    subject {RubygemDigger::GemHistory.new data_path, 'bash-session', ['0.0.1', '0.0.2', '0.0.3']}
-    its(:last_change_at) {is_expected.to eq Time.utc(2017, 1, 13).utc}
-    its(:monthly_versions) {is_expected.to eq 3}
+    it {expect(subject.frequent_than(4).count).to eq 0}
+    it {expect(subject.frequent_than(3).count).to eq 1}
   end
 
   describe 'system' do
@@ -33,7 +23,7 @@ describe RubygemDigger do
       subject.load_gems
       #expect(subject.last_change_before(Time.utc(2015, 1, 13)).count).to eq 3
       subject.last_change_before(time).select do |g|
-        if g.monthly_versions > 12
+        if g.months_with_versions > 12
           if g.still_have_issues_after(g.last_change_at + 100)
             p "#{g.name} #{g.first_change_at} #{g.last_change_at} #{g.last_homepage}"
           end

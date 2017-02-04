@@ -1,5 +1,6 @@
 #require "gem_history"
 require 'rubygems/package'
+require 'rubygem_digger/histories_wrapper'
 
 module RubygemDigger
   class GemsSpecs
@@ -10,8 +11,12 @@ module RubygemDigger
       @gems = @all.group_by(&:first)
     end
 
+    def gems_count
+      @gems.count
+    end
+
     def count
-      gemHistories&.count || @gems.count
+      histories&.count
     end
 
     def frequent_than(number)
@@ -23,16 +28,14 @@ module RubygemDigger
       @gems.reject! {|g, v| g =~ /(unstable)|(depricated)/i}
     end
 
-    def last_change_before(date)
-      gemHistories.select {|g| g.last_change_at&.send(:<, date)}
-    end
-
-    def gemHistories
-      @gemHistories ||= @gems.collect do |gem, versions|
-        GemHistory.new(@gems_path, gem, versions.collect{|x| x[1].version})
-      end.select! do |history|
-        history.exist?
-      end
+    def histories
+      @histories ||= HistoriesWrapper.new(
+        @gems.collect do |gem, versions|
+          GemHistory.new(@gems_path, gem, versions.collect{|x| x[1].version})
+        end.select! do |history|
+          history.exist?
+        end
+      )
     end
   end
 end

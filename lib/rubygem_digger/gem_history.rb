@@ -16,8 +16,18 @@ module RubygemDigger
       end
     end
 
-    def monthly_versions
-      @versions.collect{|v| spec(v)&.date}.collect{|d| d.year * 100 + d.month rescue 0}.uniq.count
+    def months_with_versions(&date_condition)
+      print "."
+      STDOUT.flush
+      dates = all_dates
+      if date_condition
+        dates = dates.select(&date_condition)
+      end
+      dates.collect{|d| d.year * 100 + d.month}.uniq.count
+    end
+
+    def all_dates
+      @all_dates ||= @versions.collect{|v| spec(v)&.date}.compact
     end
 
     def last_change_at
@@ -55,9 +65,7 @@ module RubygemDigger
     end
 
     def load_spec(version)
-      print "."
-      STDOUT.flush
-      Gem::Specification.load filename(version)
+      Marshal.load Gem.inflate(Gem.read_binary(filename(version)))
     end
 
     def filename(version)
