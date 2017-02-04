@@ -49,19 +49,19 @@ module RubygemDigger
 
     private
     def spec(version)
-      load_package(version).spec
+      load_spec(version)
     rescue
       print "X"
     end
 
-    def load_package(version)
+    def load_spec(version)
       print "."
       STDOUT.flush
-      Gem::Package.new filename(version)
+      Gem::Specification.load filename(version)
     end
 
     def filename(version)
-      @gems_path.join("gems/#{@name}-#{version}.gem").to_s
+      @gems_path.join("quick/Marshal.4.8/#{@name}-#{version}.gemspec.rz").to_s
     end
 
   end

@@ -13,7 +13,6 @@ describe RubygemDigger do
     it {expect(subject.frequent_than(10).count).to eq 17802}
 
     context 'after load gems' do
-      before {subject.load_gems}
       its(:count) {is_expected.to eq 1}
     end
   end

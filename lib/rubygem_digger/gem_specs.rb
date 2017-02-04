@@ -11,7 +11,7 @@ module RubygemDigger
     end
 
     def count
-      @gemHistories&.count || @gems.count
+      gemHistories&.count || @gems.count
     end
 
     def frequent_than(number)
@@ -24,11 +24,11 @@ module RubygemDigger
     end
 
     def last_change_before(date)
-      @gemHistories.select {|g| g.last_change_at&.send(:<, date)}
+      gemHistories.select {|g| g.last_change_at&.send(:<, date)}
     end
 
-    def load_gems
-      @gemHistories = @gems.collect do |gem, versions|
+    def gemHistories
+      @gemHistories ||= @gems.collect do |gem, versions|
         GemHistory.new(@gems_path, gem, versions.collect{|x| x[1].version})
       end.select! do |history|
         history.exist?
