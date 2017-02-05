@@ -2,6 +2,12 @@
 require 'rubygems/package'
 require 'rubygem_digger/histories_wrapper'
 
+class Array
+  def second
+    self.length <= 1 ? nil : self[1]
+  end
+end
+
 module RubygemDigger
   class GemsSpecs
     def initialize(path)
@@ -15,8 +21,8 @@ module RubygemDigger
       @gems.count
     end
 
-    def count
-      histories&.count
+    def versions_count
+      @gems.collect(&:second).flatten.count
     end
 
     def frequent_than(number)
@@ -29,7 +35,7 @@ module RubygemDigger
     end
 
     def histories
-      @histories ||= HistoriesWrapper.new(
+      HistoriesWrapper.new(
         @gems.collect do |gem, versions|
           GemHistory.new(@gems_path, gem, versions.collect{|x| x[1].version})
         end.select! do |history|

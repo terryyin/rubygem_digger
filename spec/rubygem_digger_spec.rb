@@ -9,13 +9,12 @@ describe RubygemDigger do
 
   describe RubygemDigger::GemsSpecs do
     subject {RubygemDigger::GemsSpecs.new data_path}
-    it {expect(subject.frequent_than(4).count).to eq 0}
-    it {expect(subject.frequent_than(3).count).to eq 1}
+    it {expect(subject.frequent_than(4).gems_count).to eq 50998}
+    it {expect(subject.frequent_than(3).gems_count).to eq 65195}
   end
 
   describe 'system' do
     subject {RubygemDigger::GemsSpecs.new "/Users/terry/git/gems/"}
-    xit {expect(subject.frequent_than(20).count).to eq 17802}
     xit {
       time = Time.utc(2015, 1, 1)
       subject.frequent_than(50).remove_unstable

@@ -19,21 +19,39 @@ module RubygemDigger
       end
     end
 
-    class ActivelyMaintainedPackages
+    class GeneralInfo
       include Cacheable
       include Step
       self.version = 3
 
       def create(context)
-        specs = RubygemDigger::GemsSpecs.new "/Users/terry/git/gems/"
-        @gems_count = specs.gems_count
-        specs.frequent_than(20)
-        @frequent_than_20 = specs.gems_count
-        @active_packages = specs.histories.been_maintained_for_months_before(Time.now, 24)
+        @specs = RubygemDigger::GemsSpecs.new "/Users/terry/git/gems/"
       end
 
       def report
-        p "total gems (not including rc): #{@gems_count}"
+        p "total gems (not including rc): #{@specs.gems_count}"
+        p "total versions: #{@specs.versions_count}"
+      end
+
+      def update_context(context)
+        context.merge({
+          specs: @specs
+        })
+      end
+    end
+
+    class ActivelyMaintainedPackages
+      include Cacheable
+      include Step
+      self.version = 5
+
+      def create(context)
+        specs = context[:specs].frequent_than(20)
+        @frequent_than_20 = specs.gems_count
+        @active_packages = specs.histories.been_maintained_for_months_before(Time.now, 12)
+      end
+
+      def report
         p "packages has more than 20 versions: #{@frequent_than_20}"
         p "packages having at least 12 months with versions: #{@active_packages.count}"
       end
@@ -48,10 +66,10 @@ module RubygemDigger
     class WellMaintainedPackages
       include Cacheable
       include Step
-      self.version = 2
+      self.version = 3
 
       def create(context)
-        @well_maintained = context[:active_packages].been_maintained_for_months_before(Time.now, 48)
+        @well_maintained = context[:active_packages].been_maintained_for_months_before(Time.now, 24)
       end
 
       def update_context(context)
@@ -68,7 +86,7 @@ module RubygemDigger
     class MaintanceStoppedPackages
       include Cacheable
       include Step
-      self.version = 1
+      self.version = 2
 
       def create(context)
         @maintain_stopped = context[:active_packages].last_change_before(context[:time_point])
@@ -88,7 +106,7 @@ module RubygemDigger
     class ComplicatedEnough
       include Cacheable
       include Step
-      self.version = 9
+      self.version = 10
 
       def create(context)
         @maintain_stopped = context[:maintain_stopped].complicated_enough
@@ -107,6 +125,21 @@ module RubygemDigger
         p "stopped and complicated enough: #{@maintain_stopped.count}"
         p "well maintained and complicated enough: #{@well_maintained_past.count}"
       end
+    end
+
+    class StoppedButHavingIssues
+      include Cacheable
+      include Step
+      self.version = 7
+
+      def create(context)
+        @maintain_stopped_having_issues = context[:maintain_stopped].having_issues_after(context[:time_point])
+      end
+
+      def report
+        p "stopped and complicated enough and still having issues: #{@maintain_stopped_having_issues.count}"
+      end
+
     end
 
   end

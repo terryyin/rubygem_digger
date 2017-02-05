@@ -8,6 +8,10 @@ module RubygemDigger
       @versions = versions
     end
 
+    def having_versions?
+      @versions.count > 0
+    end
+
     def before(time)
       self.class.new @gems_path, @name, @versions.select {|v| spec(v).date < time}
     end
@@ -45,7 +49,7 @@ module RubygemDigger
     end
 
     def complicated_enough
-      last_package.nloc > 3000
+      last_package.nloc&.send(:>, 3000)
     end
 
     def last
@@ -61,14 +65,16 @@ module RubygemDigger
     end
 
     def popular_in_github(more_than)
-      repo = GithubDigger.load(last.homepage)
+      repo = CachedGithubDigger.load_or_create(url: last.homepage)
       if repo
         repo.stars_count > more_than
       end
     end
 
     def still_have_issues_after(time)
-      GithubDigger.issues_updated_after(last.homepage, time)&.send(:>=, 2)
+      p last.homepage
+      repo = CachedGithubDigger.load_or_create(url: last.homepage)
+      repo.issues_updated_after(time)&.send(:>=, 2)
     end
 
     private

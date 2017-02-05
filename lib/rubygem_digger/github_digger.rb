@@ -1,3 +1,4 @@
+require "rubygem_digger/cacheable"
 require 'github_api'
 
 module RubygemDigger
@@ -29,22 +30,44 @@ module RubygemDigger
       @repo.open_issues
     end
 
-    def self.issues_updated_after(url, time)
-      if url =~ %r{github\.com/(\w+)/(\w+)}
-        all = issues($~[1], $~[2])
-        return 0 unless all.status == 200
-        all.select do |i|
-          Time.parse(i.updated_at) > time
-        end.count
-      end
+    def issues_updated_after(time)
+      issues.select do |i|
+        Time.parse(i.updated_at) > time
+      end.count
+    end
+
+    def issues
+      @issues ||= _issues
+    end
+
+    private
+    def _issues
+      i = Github::Client::Issues.new.all(user: @user, repo: @reponame)
+      return [] unless i.status == 200
+      i
     rescue Github::Error::NotFound
-      nil
+      []
     end
 
-    def self.issues(user, reponame)
-      issues = Github::Client::Issues.new
-      issues.all user: user, repo: reponame
+  end
+
+  class CachedGithubDigger
+    include Cacheable
+    self.version = 0
+
+    def self.instance_name(context)
+      "#{context[:url]&.gsub(/[\/\\\?\#\:]+/,'-')}"
     end
 
+    def create(context)
+      if context[:url] =~ %r{github\.com/(\w+)/(\w+)}
+        @github = GithubDigger.new(nil, $~[1], $~[2])
+      end
+    end
+
+    def issues_updated_after(time)
+      p @github&.issues_updated_after(time)
+      @github&.issues_updated_after(time)
+    end
   end
 end

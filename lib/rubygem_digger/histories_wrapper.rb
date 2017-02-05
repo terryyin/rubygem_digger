@@ -21,7 +21,11 @@ module RubygemDigger
     end
 
     def histories_before(time)
-      self.class.new @histories.collect {|g| g.before(time)}
+      self.class.new @histories.collect {|g| g.before(time)}.select(&:having_versions?)
+    end
+
+    def having_issues_after(time)
+      self.class.new @histories.select {|g| g.still_have_issues_after(time)}
     end
 
   end
