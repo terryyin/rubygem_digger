@@ -1,9 +1,15 @@
+require 'rubygem_digger/package_wrapper'
+
 module RubygemDigger
   class GemHistory
     def initialize(path, name, versions)
       @gems_path = Pathname.new(path)
       @name = name
       @versions = versions
+    end
+
+    def before(time)
+      self.class.new @gems_path, @name, @versions.select {|v| spec(v).date < time}
     end
 
     def name
@@ -38,8 +44,16 @@ module RubygemDigger
       last&.homepage
     end
 
+    def complicated_enough
+      last_package.nloc > 3000
+    end
+
     def last
       @last||=spec(@versions.last)
+    end
+
+    def last_package
+      CachedPackage.load_or_create(gems_path: @gems_path, name: name, version: @versions.last)
     end
 
     def first_change_at

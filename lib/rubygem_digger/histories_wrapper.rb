@@ -16,5 +16,13 @@ module RubygemDigger
       self.class.new @histories.select {|g| g.last_change_at&.send(:<, date)}
     end
 
+    def complicated_enough
+      self.class.new @histories.select {|g| g.complicated_enough}
+    end
+
+    def histories_before(time)
+      self.class.new @histories.collect {|g| g.before(time)}
+    end
+
   end
 end

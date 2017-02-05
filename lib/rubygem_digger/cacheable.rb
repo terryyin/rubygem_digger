@@ -25,22 +25,23 @@ module RubygemDigger
       end
 
       def invalidate
-        File.delete(filename)
+        File.delete(cache_filename({}))
       rescue Errno::ENOENT
       end
 
       def load_or_create(context)
-        return load if File.exists? filename
+        fn = cache_filename(context)
+        return load(fn) if File.exists? fn
         start = Time.now
         self.new.tap do |n|
           n.create(context) if n.respond_to? :create
           n.time_elapsed = Time.now - start
-          n.flush
+          n.flush(fn)
         end
       end
 
-      def load
-        Zlib::GzipReader.open(filename) do |file|
+      def load(fn)
+        Zlib::GzipReader.open(fn) do |file|
           Marshal.load(file)
         end
       end
@@ -49,8 +50,12 @@ module RubygemDigger
         []
       end
 
-      def filename
-        Pathname(Cacheable.base_path).join("#{self.name}--#{self.version}.data")
+      def cache_filename(context)
+        Pathname(Cacheable.base_path).join("#{self.name}-#{self.instance_name(context)}-#{self.version}.data")
+      end
+
+      def instance_name(context)
+        context[:instance_name]
       end
 
     end
@@ -63,8 +68,8 @@ module RubygemDigger
       @time_elapsed
     end
 
-    def flush
-      Zlib::GzipWriter.open(self.class.filename) do |file|
+    def flush(fn)
+      Zlib::GzipWriter.open(fn) do |file|
         Marshal.dump(self, file)
       end
       self

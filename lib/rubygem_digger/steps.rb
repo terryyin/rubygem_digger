@@ -8,7 +8,8 @@ module RubygemDigger
       module ClassMethods
         def run(context)
           o = load_or_create(context)
-          o.report
+          o.report if o.respond_to? :report
+          p "Time elapsed: #{o.time_elapsed}"
           o.update_context(context)
         end
       end
@@ -35,13 +36,12 @@ module RubygemDigger
         p "total gems (not including rc): #{@gems_count}"
         p "packages has more than 20 versions: #{@frequent_than_20}"
         p "packages having at least 12 months with versions: #{@active_packages.count}"
-        p "Time elapsed: #{@time_elapsed}"
       end
 
       def update_context(context)
-        {
+        context.merge({
           active_packages: @active_packages
-        }
+        })
       end
     end
 
@@ -54,9 +54,14 @@ module RubygemDigger
         @well_maintained = context[:active_packages].been_maintained_for_months_before(Time.now, 48)
       end
 
+      def update_context(context)
+        context.merge({
+          well_maintained: @well_maintained
+        })
+      end
+
       def report
         p "Well maintained packaged (24+ months): #{@well_maintained.count}"
-        p "Time elapsed: #{@time_elapsed}"
       end
     end
 
@@ -66,14 +71,43 @@ module RubygemDigger
       self.version = 1
 
       def create(context)
-        time = Time.utc(2015, 1, 1)
-        @maintain_stopped = context[:active_packages].last_change_before(time)
+        @maintain_stopped = context[:active_packages].last_change_before(context[:time_point])
+      end
+
+      def update_context(context)
+        context.merge({
+          maintain_stopped: @maintain_stopped
+        })
       end
 
       def report
         p "Stopped packaged for 2+ year: #{@maintain_stopped.count}"
-        p "Time elapsed: #{@time_elapsed}"
       end
     end
+
+    class ComplicatedEnough
+      include Cacheable
+      include Step
+      self.version = 9
+
+      def create(context)
+        @maintain_stopped = context[:maintain_stopped].complicated_enough
+        past = context[:well_maintained].histories_before(context[:time_point])
+        @well_maintained_past = past.complicated_enough
+      end
+
+      def update_context(context)
+        context.merge({
+          maintain_stopped: @maintain_stopped,
+          well_maintained_past: @well_maintained_past
+        })
+      end
+
+      def report
+        p "stopped and complicated enough: #{@maintain_stopped.count}"
+        p "well maintained and complicated enough: #{@well_maintained_past.count}"
+      end
+    end
+
   end
 end
