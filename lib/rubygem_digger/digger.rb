@@ -8,14 +8,36 @@ module RubygemDigger
   end
 
   class Digger
+    def tasks
+      [
+      Steps::GeneralInfo,
+      Steps::ActivelyMaintainedPackages,
+      Steps::WellMaintainedPackages,
+      Steps::MaintanceStoppedPackages,
+      Steps::ComplicatedEnough,
+      Steps::SimpleAnalysis,
+      #Steps::StoppedButHavingIssues,
+      Steps::GetAllLizardReport,
+      #get rubygems downlowds count
+      ]
+    end
+
+    def dig(&block)
+      context = {
+        time_point: Time.utc(2015, 1, 1),
+        job_plan: block
+      }
+      tasks.each do |t|
+        context = t.run context
+      end
+      DigSuccess.new
+    end
+
     def dig!
       context = {time_point: Time.utc(2015, 1, 1)}
-      context = Steps::GeneralInfo.run context
-      context = Steps::ActivelyMaintainedPackages.run context
-      context = Steps::WellMaintainedPackages.run context
-      context = Steps::MaintanceStoppedPackages.run context
-      context = Steps::ComplicatedEnough.run context
-      #context = Steps::StoppedButHavingIssues.run context
+      tasks.each do |t|
+        context = t.run context
+      end
       DigSuccess.new
     end
   end

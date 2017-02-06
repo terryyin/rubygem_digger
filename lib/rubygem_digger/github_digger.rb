@@ -59,6 +59,10 @@ module RubygemDigger
       "#{context[:url]&.gsub(/[\/\\\?\#\:]+/,'-')}"
     end
 
+    def self.plan_job(context)
+      [self.class.name, context[:url], self.version]
+    end
+
     def create(context)
       if context[:url] =~ %r{github\.com/(\w+)/(\w+)}
         @github = GithubDigger.new(nil, $~[1], $~[2])

@@ -10,8 +10,14 @@ module RubygemDigger
       @version = version
     end
 
-    def nloc
-      lizard_data[:nloc]
+    def self.lizard_fields
+      %w{nloc avg_ccn avg_nloc avg_token fun_count warning_count fun_rate nloc_rate}
+    end
+
+    self.lizard_fields.each do |w|
+      define_method(w) do
+        lizard_data[w.to_sym]
+      end
     end
 
     def lizard_data
@@ -28,15 +34,21 @@ module RubygemDigger
             o += line
           end
         end
-        print o
         o
       }
     end
 
     def analyze
-      if output.scrub =~ %r{nloc Rt\s+\-+\s+(\d+)}m
+      if output.scrub =~ %r{nloc Rt\s+\-+\s+(\d+)\s+([\d\.]+)\s+([\d\.]+)\s+([\d\.]+)\s+(\d+)\s+(\d+)\s+([\d\.]+)\s+([\d\.]+)}m
         {
-          nloc: $~[1].to_i
+          nloc: $~[1].to_i,
+          avg_nloc: $~[2].to_f,
+          avg_ccn: $~[3].to_f,
+          avg_token: $~[4].to_f,
+          fun_count: $~[5].to_i,
+          warning_count: $~[6].to_i,
+          fun_rate: $~[7].to_f,
+          nloc_rate: $~[8].to_f,
         }
       end
     end
@@ -54,9 +66,12 @@ module RubygemDigger
     include Cacheable
     self.version = 2
 
+    def self.plan_job(context)
+      [self.name, instance_name(context), version]
+    end
+
     def self.instance_name(context)
       "#{context[:name]}-#{context[:version]}"
-
     end
 
     def create(context)
@@ -67,8 +82,10 @@ module RubygemDigger
       @package.lizard_data
     end
 
-    def nloc
-      @package.nloc
+    PackageWrapper.lizard_fields.each do |w|
+      define_method(w) do
+        @package.send(w.to_sym)
+      end
     end
   end
 end

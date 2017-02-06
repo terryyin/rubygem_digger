@@ -127,20 +127,67 @@ module RubygemDigger
       end
     end
 
+    class SimpleAnalysis
+      include Cacheable
+      include Step
+      self.version = 2
+
+      def create(context)
+        @stopped_average_ccn = context[:maintain_stopped].average_last_avg_ccn
+        @maintained_average_ccn = context[:well_maintained_past].average_last_avg_ccn
+        @stopped_average_nloc = context[:maintain_stopped].average_last_avg_nloc
+        @maintained_average_nloc = context[:well_maintained_past].average_last_avg_nloc
+      end
+
+      def report
+        p "average ccn stopped: #{@stopped_average_ccn}"
+        p "average ccn well maintained: #{@maintained_average_ccn}"
+        p "average nloc/fun stopped: #{@stopped_average_nloc}"
+        p "average nloc/fun well maintained: #{@maintained_average_nloc}"
+      end
+    end
+
     class StoppedButHavingIssues
       include Cacheable
       include Step
       self.version = 7
 
       def create(context)
-        @maintain_stopped_having_issues = context[:maintain_stopped].having_issues_after(context[:time_point])
+        @maintain_stopped_with_issues = context[:maintain_stopped].having_issues_after_last_version
       end
 
       def report
-        p "stopped and complicated enough and still having issues: #{@maintain_stopped_having_issues.count}"
+        p "stopped and complicated enough and still having issues: #{@maintain_stopped.count}"
+      end
+
+      def update_context(context)
+        context.merge({
+          maintain_stopped_with_issues: @maintain_stopped_with_issues,
+        })
       end
 
     end
 
+    class GetAllLizardReport
+      include Cacheable
+      include Step
+      self.version = 9
+
+      def create(context)
+        status = true
+        context[:maintain_stopped].load_lizard_report_or_yield do |type, content, version|
+          status = false
+          p type
+          context[:job_plan].call(type, content, version)
+        end
+        context[:well_maintained_past].load_lizard_report_or_yield do |type, content, version|
+          status = false
+          p type
+          context[:job_plan].call(type, content, version)
+        end
+        raise ::RubygemDigger::Error::StopAndWork unless status
+      end
+
+    end
   end
 end

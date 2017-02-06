@@ -33,7 +33,11 @@ module RubygemDigger
       if date_condition
         dates = dates.select(&date_condition)
       end
-      dates.collect{|d| d.year * 100 + d.month}.uniq.count
+      dates.collect{|d| month_number(d)}.uniq.count
+    end
+
+    def month_number(d)
+      d.year * 100 + d.month
     end
 
     def all_dates
@@ -50,6 +54,12 @@ module RubygemDigger
 
     def complicated_enough
       last_package.nloc&.send(:>, 3000)
+    end
+
+    PackageWrapper.lizard_fields.each do |w|
+      define_method("last_#{w}".to_sym) do
+        last_package.send(w.to_sym)
+      end
     end
 
     def last
@@ -71,10 +81,20 @@ module RubygemDigger
       end
     end
 
-    def still_have_issues_after(time)
-      p last.homepage
+    def still_have_issues_after_last_version
+      p last.homepage, last.date
       repo = CachedGithubDigger.load_or_create(url: last.homepage)
-      repo.issues_updated_after(time)&.send(:>=, 2)
+      repo.issues_updated_after(last.date)&.send(:>=, 2)
+    end
+
+    def load_lizard_report_or_yield(&block)
+      @versions.collect do |v|
+        [month_number(spec(v).date), v]
+      end.group_by(&:first).each do |_, vs|
+        v = vs.last.last
+        p "#{name} #{v}"
+        CachedPackage.load_or_yield(gems_path: @gems_path, name: name, version: v, &block)
+      end
     end
 
     private

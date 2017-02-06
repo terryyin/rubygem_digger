@@ -29,6 +29,11 @@ module RubygemDigger
       rescue Errno::ENOENT
       end
 
+      def load_or_yield(context, &block)
+        fn = cache_filename(context)
+        block.call(*plan_job(context)) unless File.exists? fn
+      end
+
       def load_or_create(context)
         fn = cache_filename(context)
         return load(fn) if File.exists? fn

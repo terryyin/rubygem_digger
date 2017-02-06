@@ -1,3 +1,10 @@
 Rails.application.routes.draw do
-  # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
+  resources :working_items do
+    collection do
+      post :apply_job
+      post :submit_job
+    end
+  end
+  get 'regenerate' => 'working_items#regenerate'
+  root 'working_items#index'
 end

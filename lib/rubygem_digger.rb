@@ -1,3 +1,4 @@
+require "rubygem_digger/error"
 require "rubygem_digger/github_digger"
 require "rubygem_digger/gem_history"
 require "rubygem_digger/version"
