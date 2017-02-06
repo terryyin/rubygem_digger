@@ -8,4 +8,5 @@
 /spec/reports/
 /tmp/
 /data/
+/client_cache/
 **/.DS_Store

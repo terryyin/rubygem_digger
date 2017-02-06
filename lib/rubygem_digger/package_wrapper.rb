@@ -66,8 +66,28 @@ module RubygemDigger
     include Cacheable
     self.version = 2
 
+    def self.gems_path=(path)
+      @@gems_path= path
+    end
+
+    def self.default_gems_path
+      @@gems_path
+    end
+
+    def gems_path
+      @gems_path || @@gems_path
+    end
+
     def self.plan_job(context)
       [self.name, instance_name(context), version]
+    end
+
+    def self.context_from_content(content)
+      content=~ /^(.*)\-([\d\.]+)$/
+      {
+        name: $~[1],
+        version: $~[2]
+      }
     end
 
     def self.instance_name(context)
@@ -76,7 +96,7 @@ module RubygemDigger
 
     def create(context)
       @package = PackageWrapper.new(
-        context[:gems_path],
+        context[:gems_path] || gems_path,
         context[:name],
         context[:version])
       @package.lizard_data

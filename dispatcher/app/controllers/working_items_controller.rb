@@ -16,6 +16,10 @@ class WorkingItemsController < ApplicationController
     render json: '"ok"'
   end
 
+  def download
+    send_file RubygemDigger::CachedPackage.default_gems_path.join("gems/#{params['id']}.gem")
+  end
+
   # GET /working_items
   # GET /working_items.json
   def index

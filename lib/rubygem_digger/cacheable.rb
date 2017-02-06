@@ -12,6 +12,13 @@ module RubygemDigger
     end
 
     def self.receive_upload(file, type, content, version)
+      File.open(Pathname(base_path).join(file.original_filename), "wb") do |f|
+        f.write(file.read)
+      end
+    end
+
+    def self.create_or_load_by_type(type, content, version)
+      RubygemDigger.const_get(type).load_or_create_if_match_version(content, version)
     end
 
     def self.included(base)
@@ -30,6 +37,11 @@ module RubygemDigger
       def invalidate
         File.delete(cache_filename({}))
       rescue Errno::ENOENT
+      end
+
+      def load_or_create_if_match_version(content, version)
+        return unless version.to_s == @version.to_s
+        load_or_create(context_from_content(content))
       end
 
       def load_or_yield(context, &block)
@@ -56,6 +68,10 @@ module RubygemDigger
 
       def all
         []
+      end
+
+      def cache_filename_from_content(content)
+        cache_filename(context_from_content(content))
       end
 
       def cache_filename(context)
