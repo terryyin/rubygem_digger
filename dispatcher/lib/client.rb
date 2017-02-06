@@ -42,5 +42,11 @@ module Client
       RubygemDigger::CachedPackage.gems_path = saved_path
     end
 
+    def run
+      while true
+        do_job
+        sleep 0.01
+      end
+    end
   end
 end
