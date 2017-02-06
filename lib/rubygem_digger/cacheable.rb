@@ -11,6 +11,9 @@ module RubygemDigger
       @@base_path = base_path
     end
 
+    def self.receive_upload(file, type, content, version)
+    end
+
     def self.included(base)
       base.send :extend, ClassMethods
     end

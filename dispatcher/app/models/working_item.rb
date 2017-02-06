@@ -19,6 +19,7 @@ class WorkingItem < ApplicationRecord
   end
 
   def done(upload)
+    RubygemDigger::Cacheable.receive_upload(upload, work_type, content, version)
     destroy
   end
 

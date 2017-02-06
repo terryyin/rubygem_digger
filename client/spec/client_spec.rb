@@ -11,7 +11,11 @@ describe Client do
   end
 
   describe "#submit_job" do
-    it {subject.submit_job(1)}
+    xit {subject.submit_job(1)}
+  end
+
+  describe "#do_a_job" do
+    it {subject.do_job}
   end
 
 end
