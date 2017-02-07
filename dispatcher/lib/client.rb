@@ -40,6 +40,7 @@ module Client
       end
     end
 
+    # Client::Client.new("http://192.168.1.247:3000").run
     def run
       while true
         do_job

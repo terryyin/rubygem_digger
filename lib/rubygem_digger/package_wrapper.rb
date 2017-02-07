@@ -29,7 +29,7 @@ module RubygemDigger
       @output ||= Dir.mktmpdir {|dir|
         package.extract_files dir
         o = ''
-        Open3.popen3("lizard -t4 -lruby -C4 #{dir}") do |stdout, stderr, status, thread|
+        Open3.popen3("lizard -lruby -C4 #{dir}") do |stdout, stderr, status, thread|
           while line=stderr.gets do
             o += line
           end
