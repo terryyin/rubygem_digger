@@ -151,7 +151,7 @@ module RubygemDigger
     class StoppedButHavingIssues
       include Cacheable
       include Step
-      self.version = 4
+      self.version = 5
 
       def create(context)
         @maintain_stopped_with_issues = context[:maintain_stopped].having_issues_after_last_version

@@ -43,8 +43,12 @@ module Client
     # Client::Client.new("http://192.168.1.247:3000").run
     def run
       while true
-        do_job
-        sleep 0.01
+        begin
+          do_job
+          sleep 0.1
+        rescue
+          sleep 1
+        end
       end
     end
   end

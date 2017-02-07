@@ -18,7 +18,7 @@ module RubygemDigger
       Steps::ComplicatedEnough,
       Steps::SimpleAnalysis,
       Steps::StoppedButHavingIssues,
-      #Steps::GetAllLizardReport,
+      Steps::GetAllLizardReport,
       #get rubygems downlowds count
       ]
     end
