@@ -86,15 +86,17 @@ module RubygemDigger
     class MaintanceStoppedPackages
       include Cacheable
       include Step
-      self.version = 2
+      self.version = 3
 
       def create(context)
         @maintain_stopped = context[:active_packages].last_change_before(context[:time_point])
+        @well_maintained_past = context[:well_maintained].histories_before(context[:time_point])
       end
 
       def update_context(context)
         context.merge({
-          maintain_stopped: @maintain_stopped
+          maintain_stopped: @maintain_stopped,
+          well_maintained_past: @well_maintained_past
         })
       end
 
@@ -106,12 +108,11 @@ module RubygemDigger
     class ComplicatedEnough
       include Cacheable
       include Step
-      self.version = 10
+      self.version = 11
 
       def create(context)
         @maintain_stopped = context[:maintain_stopped].complicated_enough
-        past = context[:well_maintained].histories_before(context[:time_point])
-        @well_maintained_past = past.complicated_enough
+        @well_maintained_past = context[:well_maintained_past].complicated_enough
       end
 
       def update_context(context)
@@ -130,7 +131,7 @@ module RubygemDigger
     class SimpleAnalysis
       include Cacheable
       include Step
-      self.version = 2
+      self.version = 3
 
       def create(context)
         @stopped_average_ccn = context[:maintain_stopped].average_last_avg_ccn
@@ -150,14 +151,16 @@ module RubygemDigger
     class StoppedButHavingIssues
       include Cacheable
       include Step
-      self.version = 7
+      self.version = 4
 
       def create(context)
         @maintain_stopped_with_issues = context[:maintain_stopped].having_issues_after_last_version
       end
 
       def report
-        p "stopped and complicated enough and still having issues: #{@maintain_stopped.count}"
+        p "stopped and complicated enough and still having issues: #{@maintain_stopped_with_issues.count}"
+        p "                                average ccn/fun: #{@maintain_stopped_with_issues.average_last_avg_ccn}"
+        p "                                average nloc/fun: #{@maintain_stopped_with_issues.average_last_avg_nloc}"
       end
 
       def update_context(context)
@@ -187,7 +190,29 @@ module RubygemDigger
         end
         raise ::RubygemDigger::Error::StopAndWork unless status
       end
-
     end
+
+    class GetAllLastLizardReport
+      include Cacheable
+      include Step
+      self.version = 1
+
+      def create(context)
+        status = true
+        context[:maintain_stopped].load_last_lizard_report_or_yield do |type, content, version|
+          status = false
+          p type
+          context[:job_plan].call(type, content, version)
+        end
+        context[:well_maintained_past].load_last_lizard_report_or_yield do |type, content, version|
+          status = false
+          p type
+          context[:job_plan].call(type, content, version)
+        end
+        raise ::RubygemDigger::Error::StopAndWork unless status
+      end
+    end
+
   end
+
 end

@@ -66,6 +66,7 @@ module RubygemDigger
     def create(context)
       if context[:url] =~ %r{github\.com/(\w+)/(\w+)}
         @github = GithubDigger.new(nil, $~[1], $~[2])
+        @github.issues
       end
     end
 

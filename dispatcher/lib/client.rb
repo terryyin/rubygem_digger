@@ -23,11 +23,10 @@ module Client
     end
 
     def do_job
-      saved_path = Pathname.new(File.expand_path("../../../client_cache/", __FILE__))
       RubygemDigger::CachedPackage.gems_path = Pathname.new(File.expand_path("../../../client_cache/", __FILE__))
       jobs = apply_job
       jobs.each do |job|
-        gem = RubygemDigger::CachedPackage.default_gems_path.join("gems/#{job['content']}.gem")
+        gem = RubygemDigger::CachedPackage.new.gems_path.join("gems/#{job['content']}.gem")
         p gem
         unless File.exists?(gem)
           open(gem, "wb") do |file|
@@ -39,7 +38,6 @@ module Client
         filename = obj.class.cache_filename_from_content(job['content'])
         submit_job(job["id"], filename) if obj
       end
-      RubygemDigger::CachedPackage.gems_path = saved_path
     end
 
     def run

@@ -14,10 +14,11 @@ module RubygemDigger
       Steps::ActivelyMaintainedPackages,
       Steps::WellMaintainedPackages,
       Steps::MaintanceStoppedPackages,
+      Steps::GetAllLastLizardReport,
       Steps::ComplicatedEnough,
       Steps::SimpleAnalysis,
-      #Steps::StoppedButHavingIssues,
-      Steps::GetAllLizardReport,
+      Steps::StoppedButHavingIssues,
+      #Steps::GetAllLizardReport,
       #get rubygems downlowds count
       ]
     end

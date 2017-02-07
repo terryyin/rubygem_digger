@@ -32,6 +32,10 @@ module RubygemDigger
       @histories.each {|g| g.load_lizard_report_or_yield(&block)}
     end
 
+    def load_last_lizard_report_or_yield(&block)
+      @histories.each {|g| g.load_last_lizard_report_or_yield(&block)}
+    end
+
     PackageWrapper.lizard_fields.each do |w|
       define_method("average_last_#{w}".to_sym) do
         @histories.collect(&"last_#{w}".to_sym).instance_eval { reduce(:+) / size.to_f}

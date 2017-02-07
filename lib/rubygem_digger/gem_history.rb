@@ -97,6 +97,12 @@ module RubygemDigger
       end
     end
 
+    def load_last_lizard_report_or_yield(&block)
+      v = @versions.last
+      p "#{name} #{v}"
+      CachedPackage.load_or_yield(gems_path: @gems_path, name: name, version: v, &block)
+    end
+
     private
     def spec(version)
       load_spec(version)
