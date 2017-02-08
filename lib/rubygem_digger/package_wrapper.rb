@@ -51,9 +51,35 @@ module RubygemDigger
           fun_count: $~[5].to_i,
           warning_count: $~[6].to_i,
           fun_rate: $~[7].to_f,
-          nloc_rate: $~[8].to_f,
-          rubocop: output[:rubocop]
-        }
+          nloc_rate: $~[8].to_f
+        }.tap do |h|
+          output[:lizard].scrub =~ /(\d+) file analyzed\./
+          h[:files] = $~[1].to_i
+          [
+            "Style/",
+            "Lint/",
+            "Lint/Duplicate",
+            "Metrics/AbcSize",
+            "Metrics/BlockLength",
+            "Metrics/BlockNesting",
+            "Metrics/ClassLength",
+            "Metrics/CyclomaticComplexity",
+            "Metrics/LineLength",
+            "Metrics/MethodLength",
+            "Metrics/ModuleLength",
+            "Metrics/ParameterLists",
+            "Metrics/PerceivedComplexity",
+            "Total"
+          ].each do |cop|
+            cop_title = cop.downcase.gsub('/', '_')
+            if output[:rubocop] =~ %r{(\d)+\s+#{cop}}
+                h[cop_title.to_sym] = $~[1].to_i
+            else
+                h[cop_title.to_sym] = 0
+            end
+          end
+
+        end
       end
     end
 

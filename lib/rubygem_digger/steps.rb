@@ -68,10 +68,11 @@ module RubygemDigger
     class WellMaintainedPackages
       include Cacheable
       include Step
-      self.version = 3
+      self.version = 4
 
       def create(context)
         @well_maintained = context[:active_packages].been_maintained_for_months_before(Time.now, 24)
+        @well_maintained = @well_maintained.black_list(['rhodes'])
       end
 
       def update_context(context)
@@ -88,7 +89,7 @@ module RubygemDigger
     class MaintanceStoppedPackages
       include Cacheable
       include Step
-      self.version = 3
+      self.version = 4
 
       def create(context)
         @maintain_stopped = context[:active_packages].last_change_before(context[:time_point])
@@ -201,6 +202,7 @@ module RubygemDigger
 
       def create(context)
         status = true
+
         context[:maintain_stopped].load_last_lizard_report_or_yield do |type, content, version|
           status = false
           p type
@@ -218,7 +220,7 @@ module RubygemDigger
     class GenerateJsonForLastVersions
       include Cacheable
       include Step
-      self.version = 4
+      self.version = 6
       def create(context)
         open("#{self.class.cache_filename(context)}.json", "w") do |file|
           file.write( [

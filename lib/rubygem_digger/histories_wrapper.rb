@@ -20,6 +20,10 @@ module RubygemDigger
       self.class.new @histories.select {|g| g.complicated_enough}
     end
 
+    def black_list(list)
+      self.class.new @histories.reject {|g| list.include? g.name}
+    end
+
     def histories_before(time)
       self.class.new @histories.collect {|g| g.before(time)}.select(&:having_versions?)
     end

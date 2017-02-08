@@ -92,14 +92,12 @@ module RubygemDigger
         [month_number(spec(v).date), v]
       end.group_by(&:first).each do |_, vs|
         v = vs.last.last
-        p "#{name} #{v}"
         CachedPackage.load_or_yield(gems_path: @gems_path, name: name, version: v, &block)
       end
     end
 
     def load_last_lizard_report_or_yield(&block)
       v = @versions.last
-      p "#{name} #{v}"
       CachedPackage.load_or_yield(gems_path: @gems_path, name: name, version: v, &block)
     end
 

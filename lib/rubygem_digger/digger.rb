@@ -19,7 +19,7 @@ module RubygemDigger
       Steps::GenerateJsonForLastVersions,
       Steps::SimpleAnalysis,
       Steps::StoppedButHavingIssues,
-      Steps::GetAllLizardReport,
+      #Steps::GetAllLizardReport,
       #get rubygems downlowds count
       ]
     end

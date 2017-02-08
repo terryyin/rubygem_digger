@@ -18,8 +18,6 @@ module RubygemDigger
     end
 
     def self.create_or_load_by_type(type, content, version)
-      puts RubygemDigger.const_get(type)
-      STDOUT.flush
       RubygemDigger.const_get(type).load_or_create_if_match_version(content, version)
     end
 
