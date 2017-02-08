@@ -28,19 +28,10 @@ module RubygemDigger
     def output
       @output ||= Dir.mktmpdir {|dir|
         package.extract_files dir
-        o = ''
-        Open3.popen3("lizard -lruby -C4 #{dir}") do |stdout, stderr, status, thread|
-          while line=stderr.gets do
-            o += line
-          end
-        end
-        r = ''
-        Open3.popen3("rubocop -fo #{dir}") do |stdout, stderr, status, thread|
-          while line=stderr.gets do
-            r += line
-          end
-        end
-        p r
+
+        r = `rubocop -fo #{dir}`
+        print r
+        o=`lizard -lruby -C4 #{dir}`
 
 
         {
@@ -61,6 +52,7 @@ module RubygemDigger
           warning_count: $~[6].to_i,
           fun_rate: $~[7].to_f,
           nloc_rate: $~[8].to_f,
+          rubocop: output[:rubocop]
         }
       end
     end
@@ -76,7 +68,7 @@ module RubygemDigger
 
   class CachedPackage
     include Cacheable
-    self.version = 3
+    self.version = 4
 
     def self.gems_path=(path)
       @@gems_path= path
