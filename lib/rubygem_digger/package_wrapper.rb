@@ -40,6 +40,7 @@ module RubygemDigger
             r += line
           end
         end
+        p r
 
 
         {
