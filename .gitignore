@@ -10,3 +10,4 @@
 /data/
 /client_cache/
 **/.DS_Store
+notebook/.ipynb_checkpoints/
