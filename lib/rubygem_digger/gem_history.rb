@@ -103,6 +103,10 @@ module RubygemDigger
       CachedPackage.load_or_yield(gems_path: @gems_path, name: name, version: v, &block)
     end
 
+    def stats_for_last_version
+      { name: @name, version: @versions.last, stat: last_package.stats }
+    end
+
     private
     def spec(version)
       load_spec(version)

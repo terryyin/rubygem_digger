@@ -7,6 +7,8 @@ module RubygemDigger
 
       module ClassMethods
         def run(context)
+          p "===================="
+          p "Step: #{self.name}"
           o = load_or_create(context)
           o.report if o.respond_to? :report
           p "Time elapsed: #{o.time_elapsed}"
@@ -174,7 +176,7 @@ module RubygemDigger
     class GetAllLizardReport
       include Cacheable
       include Step
-      self.version = 9
+      self.version = 10
 
       def create(context)
         status = true
@@ -195,7 +197,7 @@ module RubygemDigger
     class GetAllLastLizardReport
       include Cacheable
       include Step
-      self.version = 1
+      self.version = 2
 
       def create(context)
         status = true
@@ -210,6 +212,20 @@ module RubygemDigger
           context[:job_plan].call(type, content, version)
         end
         raise ::RubygemDigger::Error::StopAndWork unless status
+      end
+    end
+
+    class GenerateJsonForLastVersions
+      include Cacheable
+      include Step
+      self.version = 4
+      def create(context)
+        open("#{self.class.cache_filename(context)}.json", "w") do |file|
+          file.write( [
+            context[:maintain_stopped].stats_for_last_packages("good"),
+            context[:well_maintained_past].stats_for_last_packages("bad")
+          ].flatten.to_json)
+        end
       end
     end
 

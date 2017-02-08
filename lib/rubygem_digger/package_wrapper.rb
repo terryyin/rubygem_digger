@@ -16,11 +16,11 @@ module RubygemDigger
 
     self.lizard_fields.each do |w|
       define_method(w) do
-        lizard_data[w.to_sym]
+        stats[w.to_sym]
       end
     end
 
-    def lizard_data
+    def stats
       analyze || {}
     end
 
@@ -34,12 +34,23 @@ module RubygemDigger
             o += line
           end
         end
-        o
+        r = ''
+        Open3.popen3("rubocop -fo #{dir}") do |stdout, stderr, status, thread|
+          while line=stderr.gets do
+            r += line
+          end
+        end
+
+
+        {
+          lizard: o,
+          rubocop: r
+        }
       }
     end
 
     def analyze
-      if output.scrub =~ %r{nloc Rt\s+\-+\s+(\d+)\s+([\d\.]+)\s+([\d\.]+)\s+([\d\.]+)\s+(\d+)\s+(\d+)\s+([\d\.]+)\s+([\d\.]+)}m
+      if output[:lizard].scrub =~ %r{nloc Rt\s+\-+\s+(\d+)\s+([\d\.]+)\s+([\d\.]+)\s+([\d\.]+)\s+(\d+)\s+(\d+)\s+([\d\.]+)\s+([\d\.]+)}m
         {
           nloc: $~[1].to_i,
           avg_nloc: $~[2].to_f,
@@ -64,7 +75,7 @@ module RubygemDigger
 
   class CachedPackage
     include Cacheable
-    self.version = 2
+    self.version = 3
 
     def self.gems_path=(path)
       @@gems_path= path
@@ -99,13 +110,17 @@ module RubygemDigger
         context[:gems_path] || gems_path,
         context[:name],
         context[:version])
-      @package.lizard_data
+      @package.stats
     end
 
     PackageWrapper.lizard_fields.each do |w|
       define_method(w) do
         @package.send(w.to_sym)
       end
+    end
+
+    def stats
+      @package.stats
     end
   end
 end

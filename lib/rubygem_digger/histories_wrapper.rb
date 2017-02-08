@@ -28,6 +28,10 @@ module RubygemDigger
       self.class.new @histories.select {|g| g.still_have_issues_after_last_version}
     end
 
+    def stats_for_last_packages(label)
+      @histories.collect {|g| g.stats_for_last_version.merge({label: label})}
+    end
+
     def load_lizard_report_or_yield(&block)
       @histories.each {|g| g.load_lizard_report_or_yield(&block)}
     end
