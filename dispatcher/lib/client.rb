@@ -38,7 +38,7 @@ class Client
       obj = RubygemDigger::Cacheable.create_or_load_by_type(job['work_type'], job['content'], job['version'])
       filename = obj.class.cache_filename_from_content(job['content'])
       p "data file: #{filename}"
-      p "data: #{obj.stats}"
+      p "data: #{obj.output}"
       submit_job(job["id"], filename) if obj
     end
   end
@@ -53,6 +53,7 @@ class Client
         print "!!!!!!!!!!!!!!!!!1Erorr Happend!!!!!!!!!!!!!!!!!!!!!!1"
         p e.message
         sleep 1
+        raise
       end
     end
   end

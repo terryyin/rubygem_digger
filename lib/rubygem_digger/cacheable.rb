@@ -110,7 +110,9 @@ module RubygemDigger
     end
 
     def marshal_dump
-      instance_variables.collect do |k|
+      instance_variables.reject do |k|
+        k.to_s.start_with? '@_'
+      end.collect do |k|
         [k, instance_variable_get(k)]
       end
     end

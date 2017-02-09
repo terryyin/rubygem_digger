@@ -1,4 +1,5 @@
 require 'rubygem_digger/package_wrapper'
+require 'rubygem_digger/reek_wrapper'
 
 module RubygemDigger
   class GemHistory
@@ -56,8 +57,8 @@ module RubygemDigger
       last&.homepage
     end
 
-    def complicated_enough
-      last_package.nloc&.send(:>, 2000)
+    def complicated_enough(nloc)
+      last_package.nloc&.send(:>, nloc)
     end
 
     PackageWrapper.all_fields.each do |w|
@@ -71,7 +72,7 @@ module RubygemDigger
     end
 
     def last_package
-      CachedPackage.load_or_create(gems_path: @gems_path, name: name, version: @versions.last)
+      @_last_package ||= CachedPackage.load_or_create(gems_path: @gems_path, name: name, version: @versions.last)
     end
 
     def first_change_at
@@ -96,13 +97,13 @@ module RubygemDigger
         [month_number(spec(v).date), v]
       end.group_by(&:first).each do |_, vs|
         v = vs.last.last
-        CachedPackage.load_or_yield(gems_path: @gems_path, name: name, version: v, &block)
+        CachedReek.load_or_yield(gems_path: @gems_path, name: name, version: v, &block)
       end
     end
 
     def load_last_lizard_report_or_yield(&block)
       v = @versions.last
-      CachedPackage.load_or_yield(gems_path: @gems_path, name: name, version: v, &block)
+      CachedReek.load_or_yield(gems_path: @gems_path, name: name, version: v, &block)
     end
 
     def stats_for_last_version

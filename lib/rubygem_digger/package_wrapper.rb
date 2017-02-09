@@ -52,7 +52,7 @@ module RubygemDigger
     end
 
     def stats
-      analyze || {}
+      @_stats ||= analyze || {}
     end
 
     private

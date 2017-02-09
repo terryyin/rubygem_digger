@@ -1,3 +1,25 @@
+module Enumerable
+
+    def sum
+      self.inject(0){|accum, i| accum + i }
+    end
+
+    def mean
+      self.sum/self.length.to_f
+    end
+
+    def sample_variance
+      m = self.mean
+      sum = self.inject(0){|accum, i| accum +(i-m)**2 }
+      sum/(self.length - 1).to_f
+    end
+
+    def standard_deviation
+      return Math.sqrt(self.sample_variance)
+    end
+
+end
+
 module RubygemDigger
   class HistoriesWrapper
     def initialize(histories)
@@ -28,8 +50,8 @@ module RubygemDigger
       self.class.new @histories.select {|g| g.last_change_at&.send(:<, date)}
     end
 
-    def complicated_enough
-      self.class.new @histories.select {|g| g.complicated_enough}
+    def complicated_enough(nloc)
+      self.class.new @histories.select {|g| g.complicated_enough(nloc)}
     end
 
     def black_list(list)
@@ -58,7 +80,12 @@ module RubygemDigger
 
     PackageWrapper.all_fields.each do |w|
       define_method("average_last_#{w}".to_sym) do
-        @histories.collect(&"last_#{w}".to_sym).instance_eval { reduce(:+) / size.to_f}
+        @histories.collect{|x|
+          x.send("last_#{w}")/x.last_nloc.to_f}.mean * 10000
+      end
+      define_method("stddev_last_#{w}".to_sym) do
+        @histories.collect{|x|
+          x.send("last_#{w}")/x.last_nloc.to_f}.standard_deviation * 10000
       end
     end
 

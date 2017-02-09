@@ -8,7 +8,7 @@ describe RubygemDigger do
   describe 'system' do
     #its(:dig!) {is_expected.to be_successful}
     it {subject.dig do |a, b, c|
-      p a, b, c
+      #p a, b, c
     end
     }
   end

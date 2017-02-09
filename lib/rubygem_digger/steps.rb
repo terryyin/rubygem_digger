@@ -13,7 +13,7 @@ module RubygemDigger
           unless o.spec_version_match?(context[:spec][:version])
             o=just_create(context)
           end
-          o.report if o.respond_to? :report
+          o.report(context) if o.respond_to? :report
           p "Time elapsed: #{o.time_elapsed}"
           o.update_context(context)
         end
@@ -50,7 +50,7 @@ module RubygemDigger
         @histories.load_dates
       end
 
-      def report
+      def report(context)
         p "total gems (not including rc): #{@specs.gems_count}"
         p "total versions: #{@specs.versions_count}"
         p "packages has more than 12 versions: #{@frequent_than_12}"
@@ -70,12 +70,14 @@ module RubygemDigger
       self.version = 9
 
       def create(context)
-        @active_packages = context[:histories].frequent_than(12).been_maintained_for_months_before(Time.now, 10)
+        @active_packages = context[:histories]
+          .frequent_than(context[:spec][:min_number_of_gems])
+          .been_maintained_for_months_before(Time.now, context[:spec][:min_months])
         @active_packages = @active_packages.black_list(context[:black_list])
       end
 
-      def report
-        p "packages having at least 12 months with versions: #{@active_packages.count}"
+      def report(context)
+        p "packages having at least #{context[:spec][:min_months]} months with versions: #{@active_packages.count}"
       end
 
       def update_context(context)
@@ -91,7 +93,7 @@ module RubygemDigger
       self.version = 7
 
       def create(context)
-        @well_maintained = context[:active_packages].been_maintained_for_months_before(Time.now, 20)
+        @well_maintained = context[:active_packages].been_maintained_for_months_before(Time.now, context[:spec][:min_months_good])
       end
 
       def update_context(context)
@@ -100,8 +102,8 @@ module RubygemDigger
         })
       end
 
-      def report
-        p "Well maintained packaged (24+ months): #{@well_maintained.count}"
+      def report(context)
+        p "Well maintained packaged (#{context[:spec][:min_months_good]}+ months): #{@well_maintained.count}"
       end
     end
 
@@ -111,8 +113,8 @@ module RubygemDigger
       self.version = 8
 
       def create(context)
-        @maintain_stopped = context[:active_packages].last_change_before(context[:time_point])
-        @well_maintained_past = context[:well_maintained].histories_months_before(10)
+        @maintain_stopped = context[:active_packages].last_change_before(context[:spec][:stopped_time_point])
+        @well_maintained_past = context[:well_maintained].histories_months_before(context[:spec][:ignored_months_for_good])
       end
 
       def update_context(context)
@@ -122,8 +124,8 @@ module RubygemDigger
         })
       end
 
-      def report
-        p "Stopped packaged for 2+ year: #{@maintain_stopped.count}"
+      def report(context)
+        p "Stopped packaged before #{context[:spec][:stopped_time_point]}: #{@maintain_stopped.count}"
       end
     end
 
@@ -133,8 +135,8 @@ module RubygemDigger
       self.version = 16
 
       def create(context)
-        @maintain_stopped = context[:maintain_stopped].complicated_enough
-        @well_maintained_past = context[:well_maintained_past].complicated_enough
+        @maintain_stopped = context[:maintain_stopped].complicated_enough(context[:spec][:min_nloc])
+        @well_maintained_past = context[:well_maintained_past].complicated_enough(context[:spec][:min_nloc])
       end
 
       def update_context(context)
@@ -144,32 +146,39 @@ module RubygemDigger
         })
       end
 
-      def report
+      def report(context)
+        p "complicated enoug means NLOC > #{context[:spec][:min_nloc]}"
         p "stopped and complicated enough: #{@maintain_stopped.count}"
         p "well maintained and complicated enough: #{@well_maintained_past.count}"
-        @maintain_stopped.list.first(20).each do |h|
-          p h.name
-        end
       end
     end
 
     class SimpleAnalysis
       include Cacheable
       include Step
-      self.version = 6
+      self.version = 12
 
       def create(context)
-        @stopped_average_ccn = context[:maintain_stopped].average_last_avg_ccn
-        @maintained_average_ccn = context[:well_maintained_past].average_last_avg_ccn
-        @stopped_average_nloc = context[:maintain_stopped].average_last_avg_nloc
-        @maintained_average_nloc = context[:well_maintained_past].average_last_avg_nloc
+        @simple_analysis = {good: {avg: {}, stddev: {}}, bad: {avg: {}, stddev: {}}}
+        PackageWrapper.all_fields.each do |w|
+          p "counting #{w}...."
+          @simple_analysis[:good][:avg][w] =
+            context[:well_maintained_past].send("average_last_#{w}".to_sym)
+          @simple_analysis[:good][:stddev][w] =
+            context[:well_maintained_past].send("stddev_last_#{w}".to_sym)
+          @simple_analysis[:bad][:avg][w] =
+            context[:maintain_stopped].send("average_last_#{w}".to_sym)
+          @simple_analysis[:bad][:stddev][w] =
+            context[:maintain_stopped].send("stddev_last_#{w}".to_sym)
+        end
       end
 
-      def report
-        p "average ccn stopped: #{@stopped_average_ccn}"
-        p "average ccn well maintained: #{@maintained_average_ccn}"
-        p "average nloc/fun stopped: #{@stopped_average_nloc}"
-        p "average nloc/fun well maintained: #{@maintained_average_nloc}"
+      def report(context)
+        PackageWrapper.all_fields.each do |w|
+          p w
+          p "   good: #{@simple_analysis[:good][:avg][w]} #{@simple_analysis[:good][:stddev][w]} #{@simple_analysis[:good][:stddev][w]*100/@simple_analysis[:good][:avg][w]} "
+          p "   bad:  #{@simple_analysis[:bad][:avg][w]} #{@simple_analysis[:bad][:stddev][w]} #{@simple_analysis[:bad][:stddev][w]*100/@simple_analysis[:bad][:avg][w]}"
+        end
       end
     end
 
@@ -182,7 +191,7 @@ module RubygemDigger
         @maintain_stopped_with_issues = context[:maintain_stopped].having_issues_after_last_version
       end
 
-      def report
+      def report(context)
         p "stopped and complicated enough and still having issues: #{@maintain_stopped_with_issues.count}"
         p "                                average ccn/fun: #{@maintain_stopped_with_issues.average_last_avg_ccn}"
         p "                                average nloc/fun: #{@maintain_stopped_with_issues.average_last_avg_nloc}"
@@ -199,7 +208,7 @@ module RubygemDigger
     class GetAllLizardReport
       include Cacheable
       include Step
-      self.version = 12
+      self.version = 13
 
       def create(context)
         status = true
@@ -222,7 +231,7 @@ module RubygemDigger
     class GetAllLastLizardReport
       include Cacheable
       include Step
-      self.version = 5
+      self.version = 6
 
       def create(context)
         status = true

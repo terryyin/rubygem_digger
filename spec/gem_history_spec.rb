@@ -9,7 +9,7 @@ describe RubygemDigger do
     its(:months_with_versions) {is_expected.to eq 3}
 
     describe '#complicated_enough' do
-      its(:complicated_enough) {is_expected.to be_falsey}
+      it{expect(subject.complicated_enough(2000)).to be_falsey}
     end
 
     describe '#last_package' do
