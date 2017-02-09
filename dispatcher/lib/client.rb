@@ -53,7 +53,6 @@ class Client
         print "!!!!!!!!!!!!!!!!!1Erorr Happend!!!!!!!!!!!!!!!!!!!!!!1"
         p e.message
         sleep 1
-        raise
       end
     end
   end
