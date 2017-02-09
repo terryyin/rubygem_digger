@@ -10,6 +10,9 @@ module RubygemDigger
           p "===================="
           p "Step: #{self.name}"
           o = load_or_create(context)
+          unless o.spec_version_match?(context[:spec][:version])
+            o=just_create(context)
+          end
           o.report if o.respond_to? :report
           p "Time elapsed: #{o.time_elapsed}"
           o.update_context(context)
@@ -19,25 +22,44 @@ module RubygemDigger
       def update_context(context)
         context
       end
+
+      def spec_version_match?(v)
+        @spec_version.to_i == v.to_i
+      end
+
+      def spec_version=(v)
+        @spec_version = v
+      end
     end
 
     class GeneralInfo
       include Cacheable
       include Step
-      self.version = 3
+      self.version = 4
+
+      def spec_version_match?(v)
+        true
+      end
 
       def create(context)
         @specs = RubygemDigger::GemsSpecs.new "/Users/terry/git/gems/"
+        @specs = @specs.frequent_than(12)
+        @frequent_than_12 = @specs.gems_count
+        # to cache the specs
+        @histories = @specs.histories
+        @histories.load_dates
       end
 
       def report
         p "total gems (not including rc): #{@specs.gems_count}"
         p "total versions: #{@specs.versions_count}"
+        p "packages has more than 12 versions: #{@frequent_than_12}"
       end
 
       def update_context(context)
         context.merge({
-          specs: @specs
+          specs: @specs,
+          histories: @histories
         })
       end
     end
@@ -45,16 +67,14 @@ module RubygemDigger
     class ActivelyMaintainedPackages
       include Cacheable
       include Step
-      self.version = 5
+      self.version = 9
 
       def create(context)
-        specs = context[:specs].frequent_than(20)
-        @frequent_than_20 = specs.gems_count
-        @active_packages = specs.histories.been_maintained_for_months_before(Time.now, 12)
+        @active_packages = context[:histories].frequent_than(12).been_maintained_for_months_before(Time.now, 10)
+        @active_packages = @active_packages.black_list(context[:black_list])
       end
 
       def report
-        p "packages has more than 20 versions: #{@frequent_than_20}"
         p "packages having at least 12 months with versions: #{@active_packages.count}"
       end
 
@@ -68,11 +88,10 @@ module RubygemDigger
     class WellMaintainedPackages
       include Cacheable
       include Step
-      self.version = 4
+      self.version = 7
 
       def create(context)
-        @well_maintained = context[:active_packages].been_maintained_for_months_before(Time.now, 24)
-        @well_maintained = @well_maintained.black_list(['rhodes'])
+        @well_maintained = context[:active_packages].been_maintained_for_months_before(Time.now, 20)
       end
 
       def update_context(context)
@@ -89,11 +108,11 @@ module RubygemDigger
     class MaintanceStoppedPackages
       include Cacheable
       include Step
-      self.version = 4
+      self.version = 8
 
       def create(context)
         @maintain_stopped = context[:active_packages].last_change_before(context[:time_point])
-        @well_maintained_past = context[:well_maintained].histories_before(context[:time_point])
+        @well_maintained_past = context[:well_maintained].histories_months_before(10)
       end
 
       def update_context(context)
@@ -111,7 +130,7 @@ module RubygemDigger
     class ComplicatedEnough
       include Cacheable
       include Step
-      self.version = 11
+      self.version = 16
 
       def create(context)
         @maintain_stopped = context[:maintain_stopped].complicated_enough
@@ -128,13 +147,16 @@ module RubygemDigger
       def report
         p "stopped and complicated enough: #{@maintain_stopped.count}"
         p "well maintained and complicated enough: #{@well_maintained_past.count}"
+        @maintain_stopped.list.first(20).each do |h|
+          p h.name
+        end
       end
     end
 
     class SimpleAnalysis
       include Cacheable
       include Step
-      self.version = 3
+      self.version = 6
 
       def create(context)
         @stopped_average_ccn = context[:maintain_stopped].average_last_avg_ccn
@@ -154,7 +176,7 @@ module RubygemDigger
     class StoppedButHavingIssues
       include Cacheable
       include Step
-      self.version = 5
+      self.version = 9
 
       def create(context)
         @maintain_stopped_with_issues = context[:maintain_stopped].having_issues_after_last_version
@@ -177,20 +199,22 @@ module RubygemDigger
     class GetAllLizardReport
       include Cacheable
       include Step
-      self.version = 10
+      self.version = 12
 
       def create(context)
         status = true
+        count = 0
         context[:maintain_stopped].load_lizard_report_or_yield do |type, content, version|
           status = false
-          p type
+          count+=1
           context[:job_plan].call(type, content, version)
         end
         context[:well_maintained_past].load_lizard_report_or_yield do |type, content, version|
+          count+=1
           status = false
-          p type
           context[:job_plan].call(type, content, version)
         end
+        p "          ...#{count} packages need to be loaded..."
         raise ::RubygemDigger::Error::StopAndWork unless status
       end
     end
@@ -198,21 +222,23 @@ module RubygemDigger
     class GetAllLastLizardReport
       include Cacheable
       include Step
-      self.version = 2
+      self.version = 5
 
       def create(context)
         status = true
 
+        count = 0
         context[:maintain_stopped].load_last_lizard_report_or_yield do |type, content, version|
           status = false
-          p type
+          count+=1
           context[:job_plan].call(type, content, version)
         end
         context[:well_maintained_past].load_last_lizard_report_or_yield do |type, content, version|
           status = false
-          p type
+          count+=1
           context[:job_plan].call(type, content, version)
         end
+        p "          ...#{count} packages need to be loaded..."
         raise ::RubygemDigger::Error::StopAndWork unless status
       end
     end
@@ -220,13 +246,17 @@ module RubygemDigger
     class GenerateJsonForLastVersions
       include Cacheable
       include Step
-      self.version = 6
+      self.version = 18
+
       def create(context)
-        open("#{self.class.cache_filename(context)}.json", "w") do |file|
-          file.write( [
+        p "writing to: #{self.class.json_filename(context, context[:spec][:version])}"
+        open(self.class.json_filename(context, context[:spec][:version]), "w") do |file|
+          file.write({
+            spec: context[:spec],
+           data: [
             context[:maintain_stopped].stats_for_last_packages("good"),
             context[:well_maintained_past].stats_for_last_packages("bad")
-          ].flatten.to_json)
+          ].flatten}.to_json)
         end
       end
     end

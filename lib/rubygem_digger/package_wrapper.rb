@@ -14,7 +14,38 @@ module RubygemDigger
       %w{nloc avg_ccn avg_nloc avg_token fun_count warning_count fun_rate nloc_rate}
     end
 
-    self.lizard_fields.each do |w|
+    def self.rubocop_field_names
+      [
+            "Style/",
+            "Lint/",
+            "Lint/Duplicate",
+            "Metrics/AbcSize",
+            "Metrics/BlockLength",
+            "Metrics/BlockNesting",
+            "Metrics/ClassLength",
+            "Metrics/CyclomaticComplexity",
+            "Metrics/LineLength",
+            "Metrics/MethodLength",
+            "Metrics/ModuleLength",
+            "Metrics/ParameterLists",
+            "Metrics/PerceivedComplexity",
+            "Total"
+      ]
+    end
+
+    def self.cop_field_from_name(name)
+      name.downcase.gsub('/', '_')
+    end
+
+    def self.rubocop_fields
+      rubocop_field_names.collect{|c| cop_field_from_name(c)}
+    end
+
+    def self.all_fields
+      lizard_fields + rubocop_fields
+    end
+
+    self.all_fields.each do |w|
       define_method(w) do
         stats[w.to_sym]
       end
@@ -30,7 +61,6 @@ module RubygemDigger
         package.extract_files dir
 
         r = `rubocop -fo #{dir}`
-        print r
         o=`lizard -lruby -C4 #{dir}`
 
 
@@ -55,28 +85,12 @@ module RubygemDigger
         }.tap do |h|
           output[:lizard].scrub =~ /(\d+) file analyzed\./
           h[:files] = $~[1].to_i
-          [
-            "Style/",
-            "Lint/",
-            "Lint/Duplicate",
-            "Metrics/AbcSize",
-            "Metrics/BlockLength",
-            "Metrics/BlockNesting",
-            "Metrics/ClassLength",
-            "Metrics/CyclomaticComplexity",
-            "Metrics/LineLength",
-            "Metrics/MethodLength",
-            "Metrics/ModuleLength",
-            "Metrics/ParameterLists",
-            "Metrics/PerceivedComplexity",
-            "Total"
-          ].each do |cop|
-            cop_title = cop.downcase.gsub('/', '_')
-            if output[:rubocop] =~ %r{(\d)+\s+#{cop}}
-                h[cop_title.to_sym] = $~[1].to_i
-            else
-                h[cop_title.to_sym] = 0
-            end
+          self.class.rubocop_field_names.each do |cop|
+            h[self.class.cop_field_from_name(cop).to_sym] =
+              output[:rubocop].scan(%r{(\d)+\s+#{cop}})
+                .collect(&:first)
+                .collect(&:to_i)
+                .inject(0){|sum,x| sum + x }
           end
 
         end
@@ -132,7 +146,7 @@ module RubygemDigger
       @package.stats
     end
 
-    PackageWrapper.lizard_fields.each do |w|
+    PackageWrapper.all_fields.each do |w|
       define_method(w) do
         @package.send(w.to_sym)
       end

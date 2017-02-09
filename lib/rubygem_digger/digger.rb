@@ -8,6 +8,12 @@ module RubygemDigger
   end
 
   class Digger
+    def spec
+      {
+        version: 3
+      }
+    end
+
     def tasks
       [
       Steps::GeneralInfo,
@@ -18,25 +24,19 @@ module RubygemDigger
       Steps::ComplicatedEnough,
       Steps::GenerateJsonForLastVersions,
       Steps::SimpleAnalysis,
-      Steps::StoppedButHavingIssues,
-      #Steps::GetAllLizardReport,
+      Steps::GetAllLizardReport,
+      #Steps::StoppedButHavingIssues,
       #get rubygems downlowds count
       ]
     end
 
     def dig(&block)
       context = {
+        spec: spec,
         time_point: Time.utc(2015, 1, 1),
-        job_plan: block
+        job_plan: block,
+        black_list: %w{rhodes backlog adwords4r mongoid backports riak-client dirty_history gon riddl rspec utopia}
       }
-      tasks.each do |t|
-        context = t.run context
-      end
-      DigSuccess.new
-    end
-
-    def dig!
-      context = {time_point: Time.utc(2015, 1, 1)}
       tasks.each do |t|
         context = t.run context
       end

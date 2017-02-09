@@ -49,8 +49,9 @@ class Client
       begin
         do_job
         sleep 0.1
-      rescue
+      rescue => e
         print "!!!!!!!!!!!!!!!!!1Erorr Happend!!!!!!!!!!!!!!!!!!!!!!1"
+        p e.message
         sleep 1
       end
     end

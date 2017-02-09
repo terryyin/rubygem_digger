@@ -52,17 +52,23 @@ module RubygemDigger
       def load_or_create(context)
         fn = cache_filename(context)
         return load(fn) if File.exists? fn
-        start = Time.now
-        self.new.tap do |n|
-          n.create(context) if n.respond_to? :create
-          n.time_elapsed = Time.now - start
-          n.flush(fn)
-        end
+        just_create(context)
       end
 
       def load(fn)
         Zlib::GzipReader.open(fn) do |file|
           Marshal.load(file)
+        end
+      end
+
+      def just_create(context)
+        fn = cache_filename(context)
+        start = Time.now
+        self.new.tap do |n|
+          n.create(context) if n.respond_to? :create
+          n.time_elapsed = Time.now - start
+          n.spec_version = context[:spec][:version] if n.respond_to? :spec_version=
+          n.flush(fn)
         end
       end
 
@@ -76,6 +82,10 @@ module RubygemDigger
 
       def cache_filename(context)
         Pathname(Cacheable.base_path).join("#{self.name}-#{self.instance_name(context)}-#{self.version}.data")
+      end
+
+      def json_filename(context, version)
+        Pathname(Cacheable.base_path).join("..", "notebook", "#{self.name.gsub(":","-")}-#{self.instance_name(context)}-#{version}.data.json")
       end
 
       def instance_name(context)

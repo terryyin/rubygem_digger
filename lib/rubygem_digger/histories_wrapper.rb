@@ -4,8 +4,20 @@ module RubygemDigger
       @histories = histories
     end
 
+    def list
+      @histories
+    end
+
     def count
       @histories.count
+    end
+
+    def load_dates
+      @histories.each{|g| g.all_dates}
+    end
+
+    def frequent_than(times)
+      self.class.new @histories.select{|g| g.frequent_than?(times)}
     end
 
     def been_maintained_for_months_before(date, times)
@@ -24,8 +36,8 @@ module RubygemDigger
       self.class.new @histories.reject {|g| list.include? g.name}
     end
 
-    def histories_before(time)
-      self.class.new @histories.collect {|g| g.before(time)}.select(&:having_versions?)
+    def histories_months_before(months)
+      self.class.new @histories[0..-(months+1)]
     end
 
     def having_issues_after_last_version
@@ -44,7 +56,7 @@ module RubygemDigger
       @histories.each {|g| g.load_last_lizard_report_or_yield(&block)}
     end
 
-    PackageWrapper.lizard_fields.each do |w|
+    PackageWrapper.all_fields.each do |w|
       define_method("average_last_#{w}".to_sym) do
         @histories.collect(&"last_#{w}".to_sym).instance_eval { reduce(:+) / size.to_f}
       end

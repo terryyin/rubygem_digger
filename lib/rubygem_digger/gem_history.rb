@@ -26,6 +26,10 @@ module RubygemDigger
       end
     end
 
+    def frequent_than?(times)
+      @versions.count >= times
+    end
+
     def months_with_versions(&date_condition)
       print "."
       STDOUT.flush
@@ -53,10 +57,10 @@ module RubygemDigger
     end
 
     def complicated_enough
-      last_package.nloc&.send(:>, 3000)
+      last_package.nloc&.send(:>, 2000)
     end
 
-    PackageWrapper.lizard_fields.each do |w|
+    PackageWrapper.all_fields.each do |w|
       define_method("last_#{w}".to_sym) do
         last_package.send(w.to_sym)
       end
