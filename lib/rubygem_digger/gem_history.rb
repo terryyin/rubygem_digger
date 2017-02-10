@@ -1,12 +1,12 @@
 require 'rubygem_digger/package_wrapper'
-require 'rubygem_digger/reek_wrapper'
 
 module RubygemDigger
   class GemHistory
-    def initialize(path, name, versions)
+    def initialize(path, name, versions, major_versions=false)
       @gems_path = Pathname.new(path)
       @name = name
       @versions = versions
+      @major_versions = versions if major_versions
     end
 
     def having_versions?
@@ -15,6 +15,14 @@ module RubygemDigger
 
     def before(time)
       self.class.new @gems_path, @name, @versions.select {|v| spec(v).date < time}
+    end
+
+    def drop_head_months(months)
+      self.class.new @gems_path, @name, major_versions[0..-(months+1)], true
+    end
+
+    def keep_months(months)
+      self.class.new @gems_path, @name, major_versions.last(months), true
     end
 
     def name
@@ -92,18 +100,23 @@ module RubygemDigger
       repo.issues_updated_after(last.date)&.send(:>=, 2)
     end
 
-    def load_lizard_report_or_yield(&block)
-      @versions.collect do |v|
+    def major_versions
+      @major_versions ||= @versions.collect do |v|
         [month_number(spec(v).date), v]
-      end.group_by(&:first).each do |_, vs|
-        v = vs.last.last
-        CachedReek.load_or_yield(gems_path: @gems_path, name: name, version: v, &block)
+      end.group_by(&:first).sort.collect do |_, vs|
+        vs.last.last
+      end
+    end
+
+    def load_lizard_report_or_yield(&block)
+      major_versions.each do |v|
+        CachedPackage.load_or_yield(gems_path: @gems_path, name: name, version: v, &block)
       end
     end
 
     def load_last_lizard_report_or_yield(&block)
       v = @versions.last
-      CachedReek.load_or_yield(gems_path: @gems_path, name: name, version: v, &block)
+      CachedPackage.load_or_yield(gems_path: @gems_path, name: name, version: v, &block)
     end
 
     def stats_for_last_version

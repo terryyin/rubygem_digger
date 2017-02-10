@@ -107,14 +107,14 @@ module RubygemDigger
       end
     end
 
-    class MaintanceStoppedPackages
+    class MaintanceStoppedPackagesAndTrimTheGood
       include Cacheable
       include Step
       self.version = 8
 
       def create(context)
-        @maintain_stopped = context[:active_packages].last_change_before(context[:spec][:stopped_time_point])
-        @well_maintained_past = context[:well_maintained].histories_months_before(context[:spec][:ignored_months_for_good])
+        @maintain_stopped = context[:active_packages].last_change_before(context[:spec][:stopped_time_point]).keep_months(context[:spec][:history_months])
+        @well_maintained_past = context[:well_maintained].drop_head_months(context[:spec][:ignored_months_for_good]).keep_months(context[:spec][:history_months])
       end
 
       def update_context(context)
@@ -126,6 +126,8 @@ module RubygemDigger
 
       def report(context)
         p "Stopped packaged before #{context[:spec][:stopped_time_point]}: #{@maintain_stopped.count}"
+        p "   Total versions of bad:  #{@maintain_stopped.count_versions}"
+        p "   Total versions of good: #{@well_maintained_past.count_versions}"
       end
     end
 
@@ -208,7 +210,7 @@ module RubygemDigger
     class GetAllLizardReport
       include Cacheable
       include Step
-      self.version = 13
+      self.version = 14
 
       def create(context)
         status = true
@@ -231,7 +233,7 @@ module RubygemDigger
     class GetAllLastLizardReport
       include Cacheable
       include Step
-      self.version = 6
+      self.version = 8
 
       def create(context)
         status = true

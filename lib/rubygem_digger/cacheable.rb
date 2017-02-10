@@ -46,7 +46,19 @@ module RubygemDigger
 
       def load_or_yield(context, &block)
         fn = cache_filename(context)
-        block.call(*plan_job(context)) unless File.exists? fn
+        unless File.exists? fn
+          unless respond_to?(:upgrade) and upgrade_cache(context)
+            block.call(*plan_job(context))
+          end
+        end
+      end
+
+      def upgrade_cache(context)
+        fn = cache_filename_for_version(context, self.version - 1)
+        return unless File.exists? fn
+        o = load(fn)
+        o = upgrade(context, o)
+        o.flush(cache_filename(context))
       end
 
       def load_or_create(context)
@@ -81,7 +93,11 @@ module RubygemDigger
       end
 
       def cache_filename(context)
-        Pathname(Cacheable.base_path).join("#{self.name}-#{self.instance_name(context)}-#{self.version}.data")
+        cache_filename_for_version(context, self.version)
+      end
+
+      def cache_filename_for_version(context, version)
+        Pathname(Cacheable.base_path).join("#{self.name}-#{self.instance_name(context)}-#{version}.data")
       end
 
       def json_filename(context, version)

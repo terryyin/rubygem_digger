@@ -34,6 +34,10 @@ module RubygemDigger
       @histories.count
     end
 
+    def count_versions
+      @histories.collect{|h| h.major_versions.count}.sum
+    end
+
     def load_dates
       @histories.each{|g| g.all_dates}
     end
@@ -58,8 +62,12 @@ module RubygemDigger
       self.class.new @histories.reject {|g| list.include? g.name}
     end
 
-    def histories_months_before(months)
-      self.class.new @histories[0..-(months+1)]
+    def drop_head_months(months)
+      self.class.new @histories.collect{|h| h.drop_head_months(months)}
+    end
+
+    def keep_months(months)
+      self.class.new @histories.collect{|h| h.keep_months(months)}
     end
 
     def having_issues_after_last_version

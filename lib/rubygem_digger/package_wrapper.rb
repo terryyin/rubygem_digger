@@ -51,6 +51,14 @@ module RubygemDigger
       end
     end
 
+    def name
+      @name
+    end
+
+    def version
+      @version
+    end
+
     def stats
       @_stats ||= analyze || {}
     end
@@ -59,14 +67,10 @@ module RubygemDigger
     def output
       @output ||= Dir.mktmpdir {|dir|
         package.extract_files dir
-
-        r = `rubocop -fo #{dir}`
-        o=`lizard -lruby -C4 #{dir}`
-
-
         {
-          lizard: o,
-          rubocop: r
+          lizard: `lizard -lruby -C4 #{dir}`,
+          rubocop: `rubocop -fo #{dir}`,
+          reek: `reek -fjson #{dir}`
         }
       }
     end
@@ -108,7 +112,7 @@ module RubygemDigger
 
   class CachedPackage
     include Cacheable
-    self.version = 4
+    self.version = 5
 
     def self.gems_path=(path)
       @@gems_path= path
