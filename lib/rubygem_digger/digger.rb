@@ -18,7 +18,6 @@ module RubygemDigger
           min_months_good: 20,
           history_months: 20,
           stopped_time_point: Time.utc(2015, 1, 1),
-          min_months_bad: 10,
           ignored_months_for_good: 10,
 
         },
@@ -28,10 +27,9 @@ module RubygemDigger
           min_months: 10,
           min_nloc: 2000,
           min_months_good: 20,
-          history_months: 20,
+          history_months: 12,
           stopped_time_point: Time.utc(2015, 1, 1),
-          min_months_bad: 10,
-          ignored_months_for_good: 10,
+          ignored_months_for_good: 12,
 
         },
 
@@ -43,7 +41,6 @@ module RubygemDigger
           min_months_good: 20,
           history_months: 20,
           stopped_time_point: Time.utc(2015, 1, 1),
-          min_months_bad: 10,
           ignored_months_for_good: 10,
 
         }
@@ -61,10 +58,10 @@ module RubygemDigger
       Steps::MaintanceStoppedPackagesAndTrimTheGood,
       Steps::GetAllLastLizardReport,
       Steps::ComplicatedEnough,
+      Steps::StoppedButHavingIssues,
       Steps::GenerateJsonForLastVersions,
       Steps::SimpleAnalysis,
       Steps::GetAllLizardReport,
-      #Steps::StoppedButHavingIssues,
       #get rubygems downlowds count
       ]
     end

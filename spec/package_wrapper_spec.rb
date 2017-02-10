@@ -6,7 +6,7 @@ describe RubygemDigger do
   describe 'package' do
     subject {RubygemDigger::PackageWrapper.new data_path, 'bash-session', '0.0.1'}
     its(:nloc) {is_expected.to eq 164}
-    its(:style_) {is_expected.to eq 24}
+    its(:style_) {is_expected.to be_within(1).of(146)}
   end
 end
 

@@ -1,5 +1,4 @@
 module Enumerable
-
     def sum
       self.inject(0){|accum, i| accum + i }
     end
@@ -83,17 +82,19 @@ module RubygemDigger
     end
 
     def load_last_lizard_report_or_yield(&block)
-      @histories.each {|g| g.load_last_lizard_report_or_yield(&block)}
+      @histories.collect {|g| g.load_last_lizard_report_or_yield(&block)}
+    end
+
+    def collect_all_smells
+      @histories.collect {|g| g.collect_all_smells}.flatten.uniq
     end
 
     PackageWrapper.all_fields.each do |w|
       define_method("average_last_#{w}".to_sym) do
-        @histories.collect{|x|
-          x.send("last_#{w}")/x.last_nloc.to_f}.mean * 10000
+        @histories.collect{|x| x.send("last_#{w}")}.mean
       end
       define_method("stddev_last_#{w}".to_sym) do
-        @histories.collect{|x|
-          x.send("last_#{w}")/x.last_nloc.to_f}.standard_deviation * 10000
+        @histories.collect{|x| x.send("last_#{w}")}.standard_deviation
       end
     end
 

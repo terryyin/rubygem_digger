@@ -110,7 +110,7 @@ module RubygemDigger
     class MaintanceStoppedPackagesAndTrimTheGood
       include Cacheable
       include Step
-      self.version = 8
+      self.version = 9
 
       def create(context)
         @maintain_stopped = context[:active_packages].last_change_before(context[:spec][:stopped_time_point]).keep_months(context[:spec][:history_months])
@@ -158,10 +158,10 @@ module RubygemDigger
     class SimpleAnalysis
       include Cacheable
       include Step
-      self.version = 12
+      self.version = 14
 
       def create(context)
-        @simple_analysis = {good: {avg: {}, stddev: {}}, bad: {avg: {}, stddev: {}}}
+        @simple_analysis = {good: {avg: {}, stddev: {}}, bad: {avg: {}, stddev: {}}, issue: {avg: {}, stddev: {}}}
         PackageWrapper.all_fields.each do |w|
           p "counting #{w}...."
           @simple_analysis[:good][:avg][w] =
@@ -172,6 +172,11 @@ module RubygemDigger
             context[:maintain_stopped].send("average_last_#{w}".to_sym)
           @simple_analysis[:bad][:stddev][w] =
             context[:maintain_stopped].send("stddev_last_#{w}".to_sym)
+          @simple_analysis[:issue][:avg][w] =
+            context[:maintain_stopped_with_issues].send("average_last_#{w}".to_sym)
+          @simple_analysis[:issue][:stddev][w] =
+            context[:maintain_stopped_with_issues].send("stddev_last_#{w}".to_sym)
+
         end
       end
 
@@ -180,6 +185,7 @@ module RubygemDigger
           p w
           p "   good: #{@simple_analysis[:good][:avg][w]} #{@simple_analysis[:good][:stddev][w]} #{@simple_analysis[:good][:stddev][w]*100/@simple_analysis[:good][:avg][w]} "
           p "   bad:  #{@simple_analysis[:bad][:avg][w]} #{@simple_analysis[:bad][:stddev][w]} #{@simple_analysis[:bad][:stddev][w]*100/@simple_analysis[:bad][:avg][w]}"
+          p "   issue:#{@simple_analysis[:issue][:avg][w]} #{@simple_analysis[:issue][:stddev][w]} #{@simple_analysis[:issue][:stddev][w]*100/@simple_analysis[:issue][:avg][w]}"
         end
       end
     end
@@ -187,7 +193,7 @@ module RubygemDigger
     class StoppedButHavingIssues
       include Cacheable
       include Step
-      self.version = 9
+      self.version = 10
 
       def create(context)
         @maintain_stopped_with_issues = context[:maintain_stopped].having_issues_after_last_version
@@ -233,7 +239,7 @@ module RubygemDigger
     class GetAllLastLizardReport
       include Cacheable
       include Step
-      self.version = 8
+      self.version = 10
 
       def create(context)
         status = true
@@ -257,7 +263,7 @@ module RubygemDigger
     class GenerateJsonForLastVersions
       include Cacheable
       include Step
-      self.version = 18
+      self.version = 22
 
       def create(context)
         p "writing to: #{self.class.json_filename(context, context[:spec][:version])}"

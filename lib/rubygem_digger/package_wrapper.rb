@@ -1,6 +1,7 @@
 require "rubygem_digger/cacheable"
 require 'tmpdir'
 require 'open3'
+require 'json'
 
 module RubygemDigger
   class PackageWrapper
@@ -12,6 +13,10 @@ module RubygemDigger
 
     def self.lizard_fields
       %w{nloc avg_ccn avg_nloc avg_token fun_count warning_count fun_rate nloc_rate}
+    end
+
+    def self.no_averaging
+      %w{nloc avg_ccn avg_nloc avg_token fun_count fun_rate nloc_rate}
     end
 
     def self.rubocop_field_names
@@ -33,6 +38,10 @@ module RubygemDigger
       ]
     end
 
+    def self.reek_fields
+      ["DuplicateMethodCall", "FeatureEnvy", "IrresponsibleModule", "NilCheck", "TooManyConstants", "TooManyMethods", "UncommunicativeVariableName", "TooManyStatements", "UnusedParameters", "InstanceVariableAssumption", "TooManyInstanceVariables", "UtilityFunction", "PrimaDonnaMethod", "NestedIterators", "DataClump", "UncommunicativeMethodName", "LongParameterList", "UncommunicativeParameterName", "ControlParameter", "ManualDispatch", "RepeatedConditional", "Attribute", "BooleanParameter", "SubclassedFromCoreClass", "UncommunicativeModuleName", "ModuleInitialize", "ClassVariable", "LongYieldList"]
+    end
+
     def self.cop_field_from_name(name)
       name.downcase.gsub('/', '_')
     end
@@ -42,12 +51,18 @@ module RubygemDigger
     end
 
     def self.all_fields
-      lizard_fields + rubocop_fields
+      lizard_fields + rubocop_fields + reek_fields
     end
 
     self.all_fields.each do |w|
-      define_method(w) do
-        stats[w.to_sym]
+      if no_averaging.include? w
+        define_method(w) do
+          stats[w.to_sym]
+        end
+      else
+        define_method(w) do
+          stats[w.to_sym] * 1000 / stats[:nloc].to_f
+        end
       end
     end
 
@@ -59,8 +74,23 @@ module RubygemDigger
       @version
     end
 
+    def all_smells
+      @all_smells ||= begin
+                        JSON.parse(output[:reek]).collect{|x| x["smell_type"]}
+                      rescue JSON::ParserError
+                        []
+                      end
+    end
+
     def stats
-      @_stats ||= analyze || {}
+      @stats ||= analyze || {}
+    end
+
+    def stats_for_report
+      self.class.all_fields.collect do |w|
+        [w, send(w)]
+      end.to_h
+
     end
 
     private
@@ -95,6 +125,10 @@ module RubygemDigger
                 .collect(&:first)
                 .collect(&:to_i)
                 .inject(0){|sum,x| sum + x }
+          end
+
+          self.class.reek_fields.each do |smell|
+            h[smell.to_sym] = all_smells.count(smell)
           end
 
         end
@@ -156,8 +190,20 @@ module RubygemDigger
       end
     end
 
+    def all_smells
+      @package.all_smells
+    end
+
     def stats
       @package.stats
+    end
+
+    def stats_for_report
+      @package.stats_for_report
+    end
+
+    def version
+      @package.version
     end
   end
 end

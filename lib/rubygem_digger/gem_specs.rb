@@ -34,6 +34,10 @@ module RubygemDigger
       @gems.reject! {|g, v| g =~ /(unstable)|(depricated)/i}
     end
 
+    def versions_of(name)
+      @gems[name].collect{|x|x[1].version}
+    end
+
     def histories
       HistoriesWrapper.new(
         @gems.collect do |gem, versions|

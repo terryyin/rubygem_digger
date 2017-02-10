@@ -76,11 +76,11 @@ module RubygemDigger
     end
 
     def last
-      @last||=spec(@versions.last)
+      @last||=spec(major_versions.last)
     end
 
     def last_package
-      @_last_package ||= CachedPackage.load_or_create(gems_path: @gems_path, name: name, version: @versions.last)
+      @_last_package ||= CachedPackage.load_or_create(gems_path: @gems_path, name: name, version: major_versions.last)
     end
 
     def first_change_at
@@ -115,14 +115,17 @@ module RubygemDigger
     end
 
     def load_last_lizard_report_or_yield(&block)
-      v = @versions.last
+      v = major_versions.last
       CachedPackage.load_or_yield(gems_path: @gems_path, name: name, version: v, &block)
     end
 
     def stats_for_last_version
-      { name: @name, version: @versions.last, stat: last_package.stats }
+      { name: @name, version: @versions.last, stat: last_package.stats_for_report }
     end
 
+    def collect_all_smells
+      last_package.all_smells
+    end
     private
     def spec(version)
       load_spec(version)
