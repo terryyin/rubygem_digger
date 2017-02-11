@@ -80,7 +80,12 @@ module RubygemDigger
     end
 
     def last_package
-      @_last_package ||= CachedPackage.load_or_create(gems_path: @gems_path, name: name, version: major_versions.last)
+      @_last_package ||= package(major_versions.last)
+    end
+
+    def package(version)
+      @_packages ||= {}
+      @_packages[version] ||= CachedPackage.load_or_create(gems_path: @gems_path, name: name, version: version)
     end
 
     def first_change_at
@@ -95,9 +100,16 @@ module RubygemDigger
     end
 
     def still_have_issues_after_last_version
-      p last.homepage, last.date
-      repo = CachedGithubDigger.load_or_create(url: last.homepage)
-      repo.issues_updated_after(last.date)&.send(:>=, 2)
+      p last.homepage
+      github.issues_updated_after(last.date)&.send(:>=, 20)
+    end
+
+    def on_github?
+      github.on_github?
+    end
+
+    def github
+      CachedGithubDigger.load_or_create(url: last.homepage)
     end
 
     def major_versions
@@ -121,6 +133,16 @@ module RubygemDigger
 
     def stats_for_last_version
       { name: @name, version: @versions.last, stat: last_package.stats_for_report }
+    end
+
+    def stats_for_all_versions
+      major_versions.zip((major_versions.count - 1).downto(0)).collect do |v, age|
+        begin
+          { name: @name, version: v, age: age, stat: package(v).stats_with_delta(last_package) }
+        rescue NoMethodError
+          nil
+        end
+      end.compact
     end
 
     def collect_all_smells

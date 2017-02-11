@@ -9,7 +9,7 @@ module Enumerable
 
     def sample_variance
       m = self.mean
-      sum = self.inject(0){|accum, i| accum +(i-m)**2 }
+      sum = self.inject(0){|accum, i| accum + (i-m)**2 }
       sum/(self.length - 1).to_f
     end
 
@@ -31,6 +31,10 @@ module RubygemDigger
 
     def count
       @histories.count
+    end
+
+    def get(name)
+      @histories.select{|h| h.name == name}.first
     end
 
     def count_versions
@@ -73,8 +77,16 @@ module RubygemDigger
       self.class.new @histories.select {|g| g.still_have_issues_after_last_version}
     end
 
+    def on_github
+      self.class.new @histories.select {|g| g.on_github?}
+    end
+
     def stats_for_last_packages(label)
       @histories.collect {|g| g.stats_for_last_version.merge({label: label})}
+    end
+
+    def stats_for_all_packages(label)
+      @histories.collect {|g| g.stats_for_all_versions}.flatten.collect{|x| x.merge({label: label})}
     end
 
     def load_lizard_report_or_yield(&block)

@@ -40,6 +40,14 @@ module RubygemDigger
       @issues ||= _issues
     end
 
+    def url
+      "https://github.com/#{@user}/#{@reponame}"
+    end
+
+    def on_github?
+      @user && @reponame
+    end
+
     private
     def _issues
       i = Github::Client::Issues.new.all(user: @user, repo: @reponame)
@@ -70,8 +78,19 @@ module RubygemDigger
       end
     end
 
+    def stars_count
+      @github&.stars_count
+    end
+
+    def url
+      @github&.url
+    end
+
+    def on_github?
+      @github&.on_github?
+    end
+
     def issues_updated_after(time)
-      p @github&.issues_updated_after(time)
       @github&.issues_updated_after(time)
     end
   end

@@ -90,7 +90,16 @@ module RubygemDigger
       self.class.all_fields.collect do |w|
         [w, send(w)]
       end.to_h
+    end
 
+    def stats_with_delta(package)
+      stats_for_report.merge(delta(package))
+    end
+
+    def delta(package)
+      self.class.all_fields.collect do |w|
+        ["delta_#{w}", package.send(w) - send(w)]
+      end.to_h
     end
 
     private
@@ -202,8 +211,17 @@ module RubygemDigger
       @package.stats_for_report
     end
 
+    def stats_with_delta(package)
+      @package.stats_with_delta(package.package)
+    end
+
+    def package
+      @package
+    end
+
     def version
       @package.version
     end
+
   end
 end

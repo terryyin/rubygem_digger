@@ -13,9 +13,10 @@ module RubygemDigger
           unless o.spec_version_match?(context[:spec][:version])
             o=just_create(context)
           end
+          context = o.update_context(context)
           o.report(context) if o.respond_to? :report
           p "Time elapsed: #{o.time_elapsed}"
-          o.update_context(context)
+          context
         end
       end
 
@@ -149,7 +150,7 @@ module RubygemDigger
       end
 
       def report(context)
-        p "complicated enoug means NLOC > #{context[:spec][:min_nloc]}"
+        p "complicated enough means NLOC > #{context[:spec][:min_nloc]}"
         p "stopped and complicated enough: #{@maintain_stopped.count}"
         p "well maintained and complicated enough: #{@well_maintained_past.count}"
       end
@@ -193,13 +194,15 @@ module RubygemDigger
     class StoppedButHavingIssues
       include Cacheable
       include Step
-      self.version = 10
+      self.version = 14
 
       def create(context)
         @maintain_stopped_with_issues = context[:maintain_stopped].having_issues_after_last_version
+        @maintain_stopped_on_github = context[:maintain_stopped].on_github
       end
 
       def report(context)
+        p "stopped and complicated enough and on github: #{@maintain_stopped_on_github.count}"
         p "stopped and complicated enough and still having issues: #{@maintain_stopped_with_issues.count}"
         p "                                average ccn/fun: #{@maintain_stopped_with_issues.average_last_avg_ccn}"
         p "                                average nloc/fun: #{@maintain_stopped_with_issues.average_last_avg_nloc}"
@@ -208,6 +211,7 @@ module RubygemDigger
       def update_context(context)
         context.merge({
           maintain_stopped_with_issues: @maintain_stopped_with_issues,
+          maintain_stopped_on_github: @maintain_stopped_on_github,
         })
       end
 
@@ -258,6 +262,9 @@ module RubygemDigger
         p "          ...#{count} packages need to be loaded..."
         raise ::RubygemDigger::Error::StopAndWork unless status
       end
+
+      def report(context)
+      end
     end
 
     class GenerateJsonForLastVersions
@@ -274,6 +281,25 @@ module RubygemDigger
             context[:maintain_stopped].stats_for_last_packages("good"),
             context[:well_maintained_past].stats_for_last_packages("bad")
           ].flatten}.to_json)
+        end
+      end
+    end
+
+    class GenerateJsonForAllVersions
+      include Cacheable
+      include Step
+      self.version = 0
+
+      def create(context)
+        fn = self.class.json_filename(context, context[:spec][:version]).to_s + ".all.json"
+        p "writing to: #{fn}"
+        open(fn, "w") do |file|
+          file.write({
+            spec: context[:spec],
+           data: [
+            context[:maintain_stopped].stats_for_all_packages("good"),
+            context[:well_maintained_past].stats_for_all_packages("bad")
+          ].flatten.select{|x| x[:stat]["nloc"]>0}}.to_json)
         end
       end
     end
