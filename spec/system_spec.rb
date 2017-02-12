@@ -32,6 +32,26 @@ describe RubygemDigger do
         print " | |\n"
       end
     }
+
+    it {
+      RubygemDigger::Digger.new.past_specs. each do |v, t|
+        print "| "
+        print t[:version]
+        print "| "
+        print t[:description]
+        print "| "
+        print t[:min_months]
+        print "| "
+        print t[:min_nloc]
+        print "| "
+        print t[:min_months_good]
+        print "| "
+        print t[:history_months]
+        print "| "
+        print t[:ignored_months_for_good]
+        print "|\n"
+      end
+    }
   end
 
 end

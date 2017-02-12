@@ -181,13 +181,10 @@ module RubygemDigger
         end
       end
 
-      def report(context)
-        PackageWrapper.all_fields.each do |w|
-          p w
-          p "   good: #{@simple_analysis[:good][:avg][w]} #{@simple_analysis[:good][:stddev][w]} #{@simple_analysis[:good][:stddev][w]*100/@simple_analysis[:good][:avg][w]} "
-          p "   bad:  #{@simple_analysis[:bad][:avg][w]} #{@simple_analysis[:bad][:stddev][w]} #{@simple_analysis[:bad][:stddev][w]*100/@simple_analysis[:bad][:avg][w]}"
-          p "   issue:#{@simple_analysis[:issue][:avg][w]} #{@simple_analysis[:issue][:stddev][w]} #{@simple_analysis[:issue][:stddev][w]*100/@simple_analysis[:issue][:avg][w]}"
-        end
+      def update_context(context)
+        context.merge({
+          simple_analysis: @simple_analysis
+                    })
       end
     end
 
@@ -270,13 +267,14 @@ module RubygemDigger
     class GenerateJsonForLastVersions
       include Cacheable
       include Step
-      self.version = 22
+      self.version = 25
 
       def create(context)
         p "writing to: #{self.class.json_filename(context, context[:spec][:version])}"
         open(self.class.json_filename(context, context[:spec][:version]), "w") do |file|
           file.write({
             spec: context[:spec],
+            simple_analysis: context[:simple_analysis],
            data: [
             context[:maintain_stopped].stats_for_last_packages("good"),
             context[:well_maintained_past].stats_for_last_packages("bad")
@@ -296,6 +294,7 @@ module RubygemDigger
         open(fn, "w") do |file|
           file.write({
             spec: context[:spec],
+            simple_analysis: context[:simple_analysis],
            data: [
             context[:maintain_stopped].stats_for_all_packages("good"),
             context[:well_maintained_past].stats_for_all_packages("bad")

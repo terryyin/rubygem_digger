@@ -98,12 +98,14 @@ module RubygemDigger
       Steps::GetAllLastLizardReport,
       Steps::ComplicatedEnough,
       Steps::StoppedButHavingIssues,
-      Steps::GenerateJsonForLastVersions,
       Steps::SimpleAnalysis,
+      Steps::GenerateJsonForLastVersions,
       Steps::GetAllLizardReport,
       Steps::GenerateJsonForAllVersions,
+      #files diff
       #get rubygems downlowds count
       # split the rubocop styles, as it's the biggest finding
+      # remove global from lizard report, put back the data.
       ]
     end
 

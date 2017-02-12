@@ -22,8 +22,11 @@ module RubygemDigger
     def self.rubocop_field_names
       [
             "Style/",
+            "Performance/",
+            "Security/",
             "Lint/",
             "Lint/Duplicate",
+            "Metrics/",
             "Metrics/AbcSize",
             "Metrics/BlockLength",
             "Metrics/BlockNesting",
@@ -34,7 +37,7 @@ module RubygemDigger
             "Metrics/ModuleLength",
             "Metrics/ParameterLists",
             "Metrics/PerceivedComplexity",
-            "Total"
+            "Total",
       ]
     end
 
@@ -51,7 +54,7 @@ module RubygemDigger
     end
 
     def self.all_fields
-      lizard_fields + rubocop_fields + reek_fields
+      lizard_fields + rubocop_fields + reek_fields + ['reek_total']
     end
 
     self.all_fields.each do |w|
@@ -136,9 +139,13 @@ module RubygemDigger
                 .inject(0){|sum,x| sum + x }
           end
 
+          total = 0
           self.class.reek_fields.each do |smell|
             h[smell.to_sym] = all_smells.count(smell)
+            total = h[smell.to_sym]
           end
+
+          h[:reek_total] = total
 
         end
       end
