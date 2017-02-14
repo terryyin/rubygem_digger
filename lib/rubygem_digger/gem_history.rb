@@ -138,7 +138,7 @@ module RubygemDigger
     def stats_for_all_versions
       major_versions.zip((major_versions.count - 1).downto(0)).collect do |v, age|
         begin
-          { name: @name, version: v, age: age, stat: package(v).stats_with_delta(last_package) }
+          { name: @name, version: v, stat: package(v).stats_with_delta(last_package).merge({age: age}) }
         rescue NoMethodError
           nil
         end

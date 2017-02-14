@@ -162,23 +162,25 @@ module RubygemDigger
       self.version = 14
 
       def create(context)
-        @simple_analysis = {good: {avg: {}, stddev: {}}, bad: {avg: {}, stddev: {}}, issue: {avg: {}, stddev: {}}}
-        PackageWrapper.all_fields.each do |w|
+        @simple_analysis =
+        PackageWrapper.all_fields.collect do |w|
           p "counting #{w}...."
-          @simple_analysis[:good][:avg][w] =
-            context[:well_maintained_past].send("average_last_#{w}".to_sym)
-          @simple_analysis[:good][:stddev][w] =
-            context[:well_maintained_past].send("stddev_last_#{w}".to_sym)
-          @simple_analysis[:bad][:avg][w] =
-            context[:maintain_stopped].send("average_last_#{w}".to_sym)
-          @simple_analysis[:bad][:stddev][w] =
-            context[:maintain_stopped].send("stddev_last_#{w}".to_sym)
-          @simple_analysis[:issue][:avg][w] =
-            context[:maintain_stopped_with_issues].send("average_last_#{w}".to_sym)
-          @simple_analysis[:issue][:stddev][w] =
-            context[:maintain_stopped_with_issues].send("stddev_last_#{w}".to_sym)
-
-        end
+          [
+            w,
+            [[:maintained, :well_maintained_past],
+             [:abandoned, :maintain_stopped],
+             [:with_issues, :maintain_stopped_with_issues]
+            ].collect do |label, data|
+              [
+                label,
+                {
+                  avg: context[data].send("average_last_#{w}".to_sym),
+                  stddev: context[data].send("stddev_last_#{w}".to_sym)
+                }
+              ]
+            end.to_h
+          ]
+        end.to_h
       end
 
       def update_context(context)
@@ -276,8 +278,8 @@ module RubygemDigger
             spec: context[:spec],
             simple_analysis: context[:simple_analysis],
            data: [
-            context[:maintain_stopped].stats_for_last_packages("good"),
-            context[:well_maintained_past].stats_for_last_packages("bad")
+            context[:maintain_stopped].stats_for_last_packages("maintained"),
+            context[:well_maintained_past].stats_for_last_packages("abandoned")
           ].flatten}.to_json)
         end
       end
@@ -296,8 +298,8 @@ module RubygemDigger
             spec: context[:spec],
             simple_analysis: context[:simple_analysis],
            data: [
-            context[:maintain_stopped].stats_for_all_packages("good"),
-            context[:well_maintained_past].stats_for_all_packages("bad")
+            context[:maintain_stopped].stats_for_all_packages("maintained"),
+            context[:well_maintained_past].stats_for_all_packages("abandoned")
           ].flatten.select{|x| x[:stat]["nloc"]>0}}.to_json)
         end
       end

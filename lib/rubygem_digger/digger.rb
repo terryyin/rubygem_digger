@@ -22,6 +22,7 @@ module RubygemDigger
           ignored_months_for_good: 10,
 
         },
+
         "2" => {
           version: 2,
           description: "less months",
@@ -32,7 +33,18 @@ module RubygemDigger
           history_months: 12,
           stopped_time_point: Time.utc(2015, 1, 1),
           ignored_months_for_good: 12,
+        },
 
+        "3" => {
+          version: 3,
+          description: "long abondoned",
+          min_number_of_gems: 12,
+          min_months: 10,
+          min_nloc: 2000,
+          min_months_good: 24,
+          history_months: 10,
+          stopped_time_point: Time.utc(2014, 7, 1),
+          ignored_months_for_good: 14,
         },
 
         "4" => {
@@ -109,12 +121,13 @@ module RubygemDigger
       ]
     end
 
-    def dig(&block)
+    def dig(version, &block)
+      p version
       context = {
-        spec: spec,
+        spec: past_specs[version.to_s],
         time_point: Time.utc(2015, 1, 1),
         job_plan: block,
-        black_list: %w{rhodes backlog adwords4r mongoid backports riak-client dirty_history gon riddl rspec utopia ohai}
+        black_list: %w{appium_lib rhodes backlog adwords4r mongoid backports riak-client dirty_history gon riddl rspec utopia ohai}
       }
       tasks.each do |t|
         context = t.run context

@@ -64,7 +64,7 @@ module RubygemDigger
         end
       else
         define_method(w) do
-          stats[w.to_sym] * 1000 / stats[:nloc].to_f
+          (stats[w.to_sym] || 0) * 1000 / stats[:nloc].to_f
         end
       end
     end
@@ -86,7 +86,7 @@ module RubygemDigger
     end
 
     def stats
-      @stats ||= analyze || {}
+      @_stats ||= analyze || {}
     end
 
     def stats_for_report
@@ -136,13 +136,13 @@ module RubygemDigger
               output[:rubocop].scan(%r{(\d)+\s+#{cop}})
                 .collect(&:first)
                 .collect(&:to_i)
-                .inject(0){|sum,x| sum + x }
+                .inject(0){|sum,x| sum + x } || 0
           end
 
           total = 0
           self.class.reek_fields.each do |smell|
             h[smell.to_sym] = all_smells.count(smell)
-            total = h[smell.to_sym]
+            total += h[smell.to_sym]
           end
 
           h[:reek_total] = total
@@ -220,6 +220,9 @@ module RubygemDigger
 
     def stats_with_delta(package)
       @package.stats_with_delta(package.package)
+    rescue
+      print @package.name
+      raise
     end
 
     def package

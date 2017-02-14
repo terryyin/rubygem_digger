@@ -56,6 +56,7 @@ class Client
         p e.message
         p "---------------------------------------"
         sleep 1
+        raise
       end
     end
   end

@@ -3,9 +3,10 @@ require 'pathname'
 
 describe RubygemDigger do
 
+  let(:version) {"1"}
   subject {
     begin
-      RubygemDigger::Digger.new.dig do |a, b, c|
+      RubygemDigger::Digger.new.dig(version) do |a, b, c|
         #p a, b, c
       end
     rescue RubygemDigger::Error::StopAndWait
@@ -13,9 +14,19 @@ describe RubygemDigger do
     end
   }
 
+  %w{2 1 4 5 7 8 3}.each do |v|
+    context "build" do
+      it {
+      RubygemDigger::Digger.new.dig(v) do |a, b, c|
+        #p a, b, c
+      end
+      }
+    end
+  end
+
   describe 'system' do
     #its(:dig!) {is_expected.to be_successful}
-    it {
+    xit {
       context = subject
       expect(context[:maintain_stopped].get("cancan")).not_to be_nil
       p context[:maintain_stopped_with_issues].list.collect(&:name)
