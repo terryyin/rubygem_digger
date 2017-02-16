@@ -17,7 +17,7 @@ module RubygemDigger
           min_months: 10,
           min_nloc: 2000,
           min_months_good: 20,
-          history_months: 20,
+          history_months: 10,
           stopped_time_point: Time.utc(2015, 1, 1),
           ignored_months_for_good: 10,
 
@@ -30,9 +30,9 @@ module RubygemDigger
           min_months: 10,
           min_nloc: 2000,
           min_months_good: 20,
-          history_months: 12,
+          history_months: 10,
           stopped_time_point: Time.utc(2015, 1, 1),
-          ignored_months_for_good: 12,
+          ignored_months_for_good: 10,
         },
 
         "3" => {
@@ -54,7 +54,7 @@ module RubygemDigger
           min_months: 10,
           min_nloc: 5000,
           min_months_good: 20,
-          history_months: 20,
+          history_months: 10,
           stopped_time_point: Time.utc(2015, 1, 1),
           ignored_months_for_good: 10,
         },
@@ -65,7 +65,7 @@ module RubygemDigger
           min_number_of_gems: 12,
           min_months: 15,
           min_nloc: 2000,
-          min_months_good: 20,
+          min_months_good: 30,
           history_months: 20,
           stopped_time_point: Time.utc(2015, 1, 1),
           ignored_months_for_good: 10,
@@ -98,7 +98,7 @@ module RubygemDigger
       }
     end
     def spec
-      past_specs["1"]
+      past_specs["5"]
     end
 
     def tasks

@@ -278,8 +278,8 @@ module RubygemDigger
             spec: context[:spec],
             simple_analysis: context[:simple_analysis],
            data: [
-            context[:maintain_stopped].stats_for_last_packages("maintained"),
-            context[:well_maintained_past].stats_for_last_packages("abandoned")
+            context[:maintain_stopped].stats_for_last_packages("abandoned"),
+            context[:well_maintained_past].stats_for_last_packages("maintained")
           ].flatten}.to_json)
         end
       end
@@ -298,8 +298,8 @@ module RubygemDigger
             spec: context[:spec],
             simple_analysis: context[:simple_analysis],
            data: [
-            context[:maintain_stopped].stats_for_all_packages("maintained"),
-            context[:well_maintained_past].stats_for_all_packages("abandoned")
+            context[:maintain_stopped].stats_for_all_packages("abandoned"),
+            context[:well_maintained_past].stats_for_all_packages("maintained")
           ].flatten.select{|x| x[:stat]["nloc"]>0}}.to_json)
         end
       end
