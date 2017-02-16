@@ -23,18 +23,6 @@ module RubygemDigger
 
         },
 
-        "2" => {
-          version: 2,
-          description: "less months",
-          min_number_of_gems: 12,
-          min_months: 10,
-          min_nloc: 2000,
-          min_months_good: 20,
-          history_months: 10,
-          stopped_time_point: Time.utc(2015, 1, 1),
-          ignored_months_for_good: 10,
-        },
-
         "3" => {
           version: 3,
           description: "long abondoned",
