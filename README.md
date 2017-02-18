@@ -1,15 +1,37 @@
 # RubygemDigger
 
-RubygemDigger is a research tool that explores the Rubygem repos.
+RubygemDigger is a prototype research tool that explores the Rubygem repos.
+
+RubyGems.org contains the packages of most of the Ruby gems open source
+software ever pubished and all their versions. It's a great resource to
+do research.
+
+## Dependencies
+
+You'll need the RubyGems respository to do the exploring. Use tool like
+https://github.com/rubygems/rubygems-mirror to mirror the entire
+RubyGems.
+
+So far, the tool depends on 3 open source static code analyzers.
+
+    $ pip install lizard
+    $ gem install rubocop
+    $ gem install reek
+
+Check the Gemfile if you care about the specific versions. Of course,
+extending to more analyzers should be easy.
+
 
 ## Installation
 
-This application depends on a Python tool `lizard`. So you need to
-install lizard first:
+You can have the source and do
 
-    $ pip install lizard
+    $ bundle
+    $ rake
 
-Add this line to your application's Gemfile:
+That will start the test and the data process.
+
+To use it in your Ruby code, add this line to your application's Gemfile:
 
 ```ruby
 gem 'rubygem_digger'
@@ -25,7 +47,27 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+The dispatcher folder is a separate Ruby on Rails web server by itself.
+Go t that folder, and do:
+
+    $ bundle
+    $ bundle exec rails s
+
+This will start to server, which provide distributed computing for
+getting the static analysis result.
+
+Then on another computer:
+
+    $ bundle
+    $ bundle exec rails c
+    > Client.new("http://<server address>:3000").new.run
+
+This will make that computer a client to do the computing job.
+
+The output will be the JSON files inside the notebook folder. Use
+Jupyter notebook to open the .ipynb files in the notebook folder and the
+machine learning work will be carried on there.
+
 
 ## Development
 
@@ -35,7 +77,7 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/rubygem_digger.
+Bug reports and pull requests are welcome on GitHub at https://github.com/terryyin/rubygem_digger.
 
 
 ## License
