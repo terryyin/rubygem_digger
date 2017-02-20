@@ -6,4 +6,3 @@ module RubygemDigger
     end
   end
 end
-

@@ -1,71 +1,66 @@
-require "spec_helper"
+require 'spec_helper'
 require 'pathname'
 
 describe RubygemDigger do
-
-  let(:version) {"1"}
-  subject {
+  let(:version) { '1' }
+  subject do
     begin
       RubygemDigger::Digger.new.dig(version) do |a, b, c|
-        #p a, b, c
+        # p a, b, c
       end
     rescue RubygemDigger::Error::StopAndWait
-      p "...........Stopped and Waiting"
+      p '...........Stopped and Waiting'
     end
-  }
+  end
 
-  %w{1 3 4 5 7 8}.each do |v|
-    context "build" do
-      it {
-      RubygemDigger::Digger.new.dig(v) do |a, b, c|
-        #p a, b, c
+  %w(1 3 4 5 7 8).each do |v|
+    context 'build' do
+      it do
+        RubygemDigger::Digger.new.dig(v) do |a, b, c|
+          # p a, b, c
+        end
       end
-      }
     end
   end
 
   describe 'system' do
-    #its(:dig!) {is_expected.to be_successful}
-    xit {
+    # its(:dig!) {is_expected.to be_successful}
+    xit do
       context = subject
-      expect(context[:maintain_stopped].get("cancan")).not_to be_nil
+      expect(context[:maintain_stopped].get('cancan')).not_to be_nil
       p context[:maintain_stopped_with_issues].list.collect(&:name)
       context[:maintain_stopped_with_issues].list.each do |h|
         github = h.github
-        print "| "
+        print '| '
         print h.name
-        print " | "
+        print ' | '
         print github.issues_updated_after(h.last.date)
-        print " | "
-        print (((Time.now - h.last.date) * 10 / 60/ 60/24/365).to_i)/10.0
-        print " | "
+        print ' | '
+        print ((Time.now - h.last.date) * 10 / 60 / 60 / 24 / 365).to_i / 10.0
+        print ' | '
         print github.url
         print " | |\n"
       end
-    }
+    end
 
-    it {
-      RubygemDigger::Digger.new.past_specs. each do |v, t|
-        print "| "
+    it do
+      RubygemDigger::Digger.new.past_specs. each do |_v, t|
+        print '| '
         print t[:version]
-        print "| "
+        print '| '
         print t[:description]
-        print "| "
+        print '| '
         print t[:min_months]
-        print "| "
+        print '| '
         print t[:min_nloc]
-        print "| "
+        print '| '
         print t[:min_months_good]
-        print "| "
+        print '| '
         print t[:history_months]
-        print "| "
+        print '| '
         print t[:ignored_months_for_good]
         print "|\n"
       end
-    }
+    end
   end
-
 end
-
-
-

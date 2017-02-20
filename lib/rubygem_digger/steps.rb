@@ -7,11 +7,11 @@ module RubygemDigger
 
       module ClassMethods
         def run(context)
-          p "===================="
-          p "Step: #{self.name}"
+          p '===================='
+          p "Step: #{name}"
           o = load_or_create(context)
           unless o.spec_version_match?(context[:spec][:version])
-            o=just_create(context)
+            o = just_create(context)
           end
           context = o.update_context(context)
           o.report(context) if o.respond_to? :report
@@ -38,12 +38,12 @@ module RubygemDigger
       include Step
       self.version = 4
 
-      def spec_version_match?(v)
+      def spec_version_match?(_v)
         true
       end
 
-      def create(context)
-        @specs = RubygemDigger::GemsSpecs.new "/Users/terry/git/gems/"
+      def create(_context)
+        @specs = RubygemDigger::GemsSpecs.new '/Users/terry/git/gems/'
         @specs = @specs.frequent_than(12)
         @frequent_than_12 = @specs.gems_count
         # to cache the specs
@@ -51,17 +51,15 @@ module RubygemDigger
         @histories.load_dates
       end
 
-      def report(context)
+      def report(_context)
         p "total gems (not including rc): #{@specs.gems_count}"
         p "total versions: #{@specs.versions_count}"
         p "packages has more than 12 versions: #{@frequent_than_12}"
       end
 
       def update_context(context)
-        context.merge({
-          specs: @specs,
-          histories: @histories
-        })
+        context.merge(specs: @specs,
+                      histories: @histories)
       end
     end
 
@@ -72,8 +70,8 @@ module RubygemDigger
 
       def create(context)
         @active_packages = context[:histories]
-          .frequent_than(context[:spec][:min_number_of_gems])
-          .been_maintained_for_months_before(Time.now, context[:spec][:min_months])
+                           .frequent_than(context[:spec][:min_number_of_gems])
+                           .been_maintained_for_months_before(Time.now, context[:spec][:min_months])
         @active_packages = @active_packages.black_list(context[:black_list])
       end
 
@@ -82,9 +80,7 @@ module RubygemDigger
       end
 
       def update_context(context)
-        context.merge({
-          active_packages: @active_packages
-        })
+        context.merge(active_packages: @active_packages)
       end
     end
 
@@ -98,9 +94,7 @@ module RubygemDigger
       end
 
       def update_context(context)
-        context.merge({
-          well_maintained: @well_maintained
-        })
+        context.merge(well_maintained: @well_maintained)
       end
 
       def report(context)
@@ -119,10 +113,8 @@ module RubygemDigger
       end
 
       def update_context(context)
-        context.merge({
-          maintain_stopped: @maintain_stopped,
-          well_maintained_past: @well_maintained_past
-        })
+        context.merge(maintain_stopped: @maintain_stopped,
+                      well_maintained_past: @well_maintained_past)
       end
 
       def report(context)
@@ -143,10 +135,8 @@ module RubygemDigger
       end
 
       def update_context(context)
-        context.merge({
-          maintain_stopped: @maintain_stopped,
-          well_maintained_past: @well_maintained_past
-        })
+        context.merge(maintain_stopped: @maintain_stopped,
+                      well_maintained_past: @well_maintained_past)
       end
 
       def report(context)
@@ -163,30 +153,27 @@ module RubygemDigger
 
       def create(context)
         @simple_analysis =
-        PackageWrapper.all_fields.collect do |w|
-          p "counting #{w}...."
-          [
-            w,
-            [[:maintained, :well_maintained_past],
-             [:abandoned, :maintain_stopped],
-             [:with_issues, :maintain_stopped_with_issues]
-            ].collect do |label, data|
-              [
-                label,
-                {
-                  avg: context[data].send("average_last_#{w}".to_sym),
-                  stddev: context[data].send("stddev_last_#{w}".to_sym)
-                }
-              ]
-            end.to_h
-          ]
-        end.to_h
+          PackageWrapper.all_fields.collect do |w|
+            p "counting #{w}...."
+            [
+              w,
+              [[:maintained, :well_maintained_past],
+               [:abandoned, :maintain_stopped],
+               [:with_issues, :maintain_stopped_with_issues]].collect do |label, data|
+                [
+                  label,
+                  {
+                    avg: context[data].send("average_last_#{w}".to_sym),
+                    stddev: context[data].send("stddev_last_#{w}".to_sym)
+                  }
+                ]
+              end.to_h
+            ]
+          end.to_h
       end
 
       def update_context(context)
-        context.merge({
-          simple_analysis: @simple_analysis
-                    })
+        context.merge(simple_analysis: @simple_analysis)
       end
     end
 
@@ -200,7 +187,7 @@ module RubygemDigger
         @maintain_stopped_on_github = context[:maintain_stopped].on_github
       end
 
-      def report(context)
+      def report(_context)
         p "stopped and complicated enough and on github: #{@maintain_stopped_on_github.count}"
         p "stopped and complicated enough and still having issues: #{@maintain_stopped_with_issues.count}"
         p "                                average ccn/fun: #{@maintain_stopped_with_issues.average_last_avg_ccn}"
@@ -208,12 +195,9 @@ module RubygemDigger
       end
 
       def update_context(context)
-        context.merge({
-          maintain_stopped_with_issues: @maintain_stopped_with_issues,
-          maintain_stopped_on_github: @maintain_stopped_on_github,
-        })
+        context.merge(maintain_stopped_with_issues: @maintain_stopped_with_issues,
+                      maintain_stopped_on_github: @maintain_stopped_on_github)
       end
-
     end
 
     class GetAllLizardReport
@@ -226,11 +210,11 @@ module RubygemDigger
         count = 0
         context[:maintain_stopped].load_lizard_report_or_yield do |type, content, version|
           status = false
-          count+=1
+          count += 1
           context[:job_plan].call(type, content, version)
         end
         context[:well_maintained_past].load_lizard_report_or_yield do |type, content, version|
-          count+=1
+          count += 1
           status = false
           context[:job_plan].call(type, content, version)
         end
@@ -250,20 +234,19 @@ module RubygemDigger
         count = 0
         context[:maintain_stopped].load_last_lizard_report_or_yield do |type, content, version|
           status = false
-          count+=1
+          count += 1
           context[:job_plan].call(type, content, version)
         end
         context[:well_maintained_past].load_last_lizard_report_or_yield do |type, content, version|
           status = false
-          count+=1
+          count += 1
           context[:job_plan].call(type, content, version)
         end
         p "          ...#{count} packages need to be loaded..."
         raise ::RubygemDigger::Error::StopAndWork unless status
       end
 
-      def report(context)
-      end
+      def report(context); end
     end
 
     class GenerateJsonForLastVersions
@@ -273,14 +256,15 @@ module RubygemDigger
 
       def create(context)
         p "writing to: #{self.class.json_filename(context, context[:spec][:version])}"
-        open(self.class.json_filename(context, context[:spec][:version]), "w") do |file|
+        open(self.class.json_filename(context, context[:spec][:version]), 'w') do |file|
           file.write({
             spec: context[:spec],
             simple_analysis: context[:simple_analysis],
-           data: [
-            context[:maintain_stopped].stats_for_last_packages("abandoned"),
-            context[:well_maintained_past].stats_for_last_packages("maintained")
-          ].flatten}.to_json)
+            data: [
+              context[:maintain_stopped].stats_for_last_packages('abandoned'),
+              context[:well_maintained_past].stats_for_last_packages('maintained')
+            ].flatten
+          }.to_json)
         end
       end
     end
@@ -291,20 +275,19 @@ module RubygemDigger
       self.version = 0
 
       def create(context)
-        fn = self.class.json_filename(context, context[:spec][:version]).to_s + ".all.json"
+        fn = self.class.json_filename(context, context[:spec][:version]).to_s + '.all.json'
         p "writing to: #{fn}"
-        open(fn, "w") do |file|
+        open(fn, 'w') do |file|
           file.write({
             spec: context[:spec],
             simple_analysis: context[:simple_analysis],
-           data: [
-            context[:maintain_stopped].stats_for_all_packages("abandoned"),
-            context[:well_maintained_past].stats_for_all_packages("maintained")
-          ].flatten.select{|x| x[:stat]["nloc"]>0}}.to_json)
+            data: [
+              context[:maintain_stopped].stats_for_all_packages('abandoned'),
+              context[:well_maintained_past].stats_for_all_packages('maintained')
+            ].flatten.select { |x| x[:stat]['nloc'] > 0 }
+          }.to_json)
         end
       end
     end
-
   end
-
 end

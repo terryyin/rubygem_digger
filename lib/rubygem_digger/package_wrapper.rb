@@ -1,4 +1,4 @@
-require "rubygem_digger/cacheable"
+require 'rubygem_digger/cacheable'
 require 'tmpdir'
 require 'open3'
 require 'json'
@@ -12,52 +12,52 @@ module RubygemDigger
     end
 
     def self.lizard_fields
-      %w{nloc avg_ccn avg_nloc avg_token fun_count warning_count fun_rate nloc_rate}
+      %w(nloc avg_ccn avg_nloc avg_token fun_count warning_count fun_rate nloc_rate)
     end
 
     def self.no_averaging
-      %w{nloc avg_ccn avg_nloc avg_token fun_count fun_rate nloc_rate}
+      %w(nloc avg_ccn avg_nloc avg_token fun_count fun_rate nloc_rate)
     end
 
     def self.rubocop_field_names
       [
-            "Style/",
-            "Performance/",
-            "Security/",
-            "Lint/",
-            "Lint/Duplicate",
-            "Metrics/",
-            "Metrics/AbcSize",
-            "Metrics/BlockLength",
-            "Metrics/BlockNesting",
-            "Metrics/ClassLength",
-            "Metrics/CyclomaticComplexity",
-            "Metrics/LineLength",
-            "Metrics/MethodLength",
-            "Metrics/ModuleLength",
-            "Metrics/ParameterLists",
-            "Metrics/PerceivedComplexity",
-            "Total",
+        'Style/',
+        'Performance/',
+        'Security/',
+        'Lint/',
+        'Lint/Duplicate',
+        'Metrics/',
+        'Metrics/AbcSize',
+        'Metrics/BlockLength',
+        'Metrics/BlockNesting',
+        'Metrics/ClassLength',
+        'Metrics/CyclomaticComplexity',
+        'Metrics/LineLength',
+        'Metrics/MethodLength',
+        'Metrics/ModuleLength',
+        'Metrics/ParameterLists',
+        'Metrics/PerceivedComplexity',
+        'Total'
       ]
     end
 
     def self.reek_fields
-      ["DuplicateMethodCall", "FeatureEnvy", "IrresponsibleModule", "NilCheck", "TooManyConstants", "TooManyMethods", "UncommunicativeVariableName", "TooManyStatements", "UnusedParameters", "InstanceVariableAssumption", "TooManyInstanceVariables", "UtilityFunction", "PrimaDonnaMethod", "NestedIterators", "DataClump", "UncommunicativeMethodName", "LongParameterList", "UncommunicativeParameterName", "ControlParameter", "ManualDispatch", "RepeatedConditional", "Attribute", "BooleanParameter", "SubclassedFromCoreClass", "UncommunicativeModuleName", "ModuleInitialize", "ClassVariable", "LongYieldList"]
+      %w(DuplicateMethodCall FeatureEnvy IrresponsibleModule NilCheck TooManyConstants TooManyMethods UncommunicativeVariableName TooManyStatements UnusedParameters InstanceVariableAssumption TooManyInstanceVariables UtilityFunction PrimaDonnaMethod NestedIterators DataClump UncommunicativeMethodName LongParameterList UncommunicativeParameterName ControlParameter ManualDispatch RepeatedConditional Attribute BooleanParameter SubclassedFromCoreClass UncommunicativeModuleName ModuleInitialize ClassVariable LongYieldList)
     end
 
     def self.cop_field_from_name(name)
-      name.downcase.gsub('/', '_')
+      name.downcase.tr('/', '_')
     end
 
     def self.rubocop_fields
-      rubocop_field_names.collect{|c| cop_field_from_name(c)}
+      rubocop_field_names.collect { |c| cop_field_from_name(c) }
     end
 
     def self.all_fields
       lizard_fields + rubocop_fields + reek_fields + ['reek_total']
     end
 
-    self.all_fields.each do |w|
+    all_fields.each do |w|
       if no_averaging.include? w
         define_method(w) do
           stats[w.to_sym]
@@ -69,17 +69,13 @@ module RubygemDigger
       end
     end
 
-    def name
-      @name
-    end
+    attr_reader :name
 
-    def version
-      @version
-    end
+    attr_reader :version
 
     def all_smells
       @all_smells ||= begin
-                        JSON.parse(output[:reek]).collect{|x| x["smell_type"]}
+                        JSON.parse(output[:reek]).collect { |x| x['smell_type'] }
                       rescue JSON::ParserError
                         []
                       end
@@ -106,37 +102,38 @@ module RubygemDigger
     end
 
     private
+
     def output
-      @output ||= Dir.mktmpdir {|dir|
+      @output ||= Dir.mktmpdir do |dir|
         package.extract_files dir
         {
           lizard: `lizard -lruby -C4 #{dir}`,
           rubocop: `rubocop -fo #{dir}`,
           reek: `reek -fjson #{dir}`
         }
-      }
+      end
     end
 
     def analyze
-      if output[:lizard].scrub =~ %r{nloc Rt\s+\-+\s+(\d+)\s+([\d\.]+)\s+([\d\.]+)\s+([\d\.]+)\s+(\d+)\s+(\d+)\s+([\d\.]+)\s+([\d\.]+)}m
+      if output[:lizard].scrub =~ /nloc Rt\s+\-+\s+(\d+)\s+([\d\.]+)\s+([\d\.]+)\s+([\d\.]+)\s+(\d+)\s+(\d+)\s+([\d\.]+)\s+([\d\.]+)/m
         {
-          nloc: $~[1].to_i,
-          avg_nloc: $~[2].to_f,
-          avg_ccn: $~[3].to_f,
-          avg_token: $~[4].to_f,
-          fun_count: $~[5].to_i,
-          warning_count: $~[6].to_i,
-          fun_rate: $~[7].to_f,
-          nloc_rate: $~[8].to_f
+          nloc: $LAST_MATCH_INFO[1].to_i,
+          avg_nloc: $LAST_MATCH_INFO[2].to_f,
+          avg_ccn: $LAST_MATCH_INFO[3].to_f,
+          avg_token: $LAST_MATCH_INFO[4].to_f,
+          fun_count: $LAST_MATCH_INFO[5].to_i,
+          warning_count: $LAST_MATCH_INFO[6].to_i,
+          fun_rate: $LAST_MATCH_INFO[7].to_f,
+          nloc_rate: $LAST_MATCH_INFO[8].to_f
         }.tap do |h|
           output[:lizard].scrub =~ /(\d+) file analyzed\./
-          h[:files] = $~[1].to_i
+          h[:files] = $LAST_MATCH_INFO[1].to_i
           self.class.rubocop_field_names.each do |cop|
             h[self.class.cop_field_from_name(cop).to_sym] =
-              output[:rubocop].scan(%r{(\d)+\s+#{cop}})
-                .collect(&:first)
-                .collect(&:to_i)
-                .inject(0){|sum,x| sum + x } || 0
+              output[:rubocop].scan(/(\d)+\s+#{cop}/)
+                              .collect(&:first)
+                              .collect(&:to_i)
+                              .inject(0) { |sum, x| sum + x } || 0
           end
 
           total = 0
@@ -146,7 +143,6 @@ module RubygemDigger
           end
 
           h[:reek_total] = total
-
         end
       end
     end
@@ -165,7 +161,7 @@ module RubygemDigger
     self.version = 5
 
     def self.gems_path=(path)
-      @@gems_path= path
+      @@gems_path = path
     end
 
     def self.default_gems_path
@@ -177,14 +173,14 @@ module RubygemDigger
     end
 
     def self.plan_job(context)
-      [self.name, instance_name(context), version]
+      [name, instance_name(context), version]
     end
 
     def self.context_from_content(content)
-      content=~ /^(.*)\-([\d\.]+)$/
+      content =~ /^(.*)\-([\d\.]+)$/
       {
-        name: $~[1],
-        version: $~[2]
+        name: $LAST_MATCH_INFO[1],
+        version: $LAST_MATCH_INFO[2]
       }
     end
 
@@ -196,7 +192,8 @@ module RubygemDigger
       @package = PackageWrapper.new(
         context[:gems_path] || gems_path,
         context[:name],
-        context[:version])
+        context[:version]
+      )
       @package.stats
     end
 
@@ -225,13 +222,10 @@ module RubygemDigger
       raise
     end
 
-    def package
-      @package
-    end
+    attr_reader :package
 
     def version
       @package.version
     end
-
   end
 end

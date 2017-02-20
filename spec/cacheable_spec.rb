@@ -1,4 +1,4 @@
-require "spec_helper"
+require 'spec_helper'
 require 'pathname'
 
 describe RubygemDigger::Cacheable do
@@ -10,15 +10,14 @@ describe RubygemDigger::Cacheable do
       @abc = 5
     end
 
-    def create(context)
-    end
+    def create(context); end
   end
 
-  before {MyCacheable.invalidate}
+  before { MyCacheable.invalidate }
 
   describe '#load_or_create' do
-    subject {MyCacheable.load_or_create({})}
-    it{is_expected.to be_a MyCacheable}
+    subject { MyCacheable.load_or_create({}) }
+    it { is_expected.to be_a MyCacheable }
 
     context 'when creating set instance vars' do
       before do
@@ -31,8 +30,8 @@ describe RubygemDigger::Cacheable do
       end
 
       context 'when object is flushed' do
-        before {subject}
-        let(:another) {MyCacheable.load_or_create({})}
+        before { subject }
+        let(:another) { MyCacheable.load_or_create({}) }
         it 'should not call create' do
           expect_any_instance_of(MyCacheable).not_to receive(:create)
           another
@@ -43,18 +42,13 @@ describe RubygemDigger::Cacheable do
         end
       end
     end
-
   end
   describe 'collection' do
-    subject {MyCacheable.all}
-    its(:size) {is_expected.to eq 0}
+    subject { MyCacheable.all }
+    its(:size) { is_expected.to eq 0 }
   end
 
   describe 'an object' do
-    subject {MyCacheable.new}
-
+    subject { MyCacheable.new }
   end
-
 end
-
-

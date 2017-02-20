@@ -11,8 +11,8 @@ module RubygemDigger
       @@base_path = base_path
     end
 
-    def self.receive_upload(file, type, content, version)
-      File.open(Pathname(base_path).join(file.original_filename), "wb") do |f|
+    def self.receive_upload(file, _type, _content, _version)
+      File.open(Pathname(base_path).join(file.original_filename), 'wb') do |f|
         f.write(file.read)
       end
     end
@@ -44,18 +44,18 @@ module RubygemDigger
         load_or_create(context_from_content(content))
       end
 
-      def load_or_yield(context, &block)
+      def load_or_yield(context)
         fn = cache_filename(context)
-        unless File.exists? fn
-          unless respond_to?(:upgrade) and upgrade_cache(context)
-            block.call(*plan_job(context))
+        unless File.exist? fn
+          unless respond_to?(:upgrade) && upgrade_cache(context)
+            yield(*plan_job(context))
           end
         end
       end
 
       def upgrade_cache(context)
-        fn = cache_filename_for_version(context, self.version - 1)
-        return unless File.exists? fn
+        fn = cache_filename_for_version(context, version - 1)
+        return unless File.exist? fn
         o = load(fn)
         o = upgrade(context, o)
         o.flush(cache_filename(context))
@@ -63,7 +63,7 @@ module RubygemDigger
 
       def load_or_create(context)
         fn = cache_filename(context)
-        return load(fn) if File.exists? fn
+        return load(fn) if File.exist? fn
         just_create(context)
       end
 
@@ -76,7 +76,7 @@ module RubygemDigger
       def just_create(context)
         fn = cache_filename(context)
         start = Time.now
-        self.new.tap do |n|
+        new.tap do |n|
           n.create(context) if n.respond_to? :create
           n.time_elapsed = Time.now - start
           n.spec_version = context[:spec][:version] if n.respond_to? :spec_version=
@@ -93,21 +93,20 @@ module RubygemDigger
       end
 
       def cache_filename(context)
-        cache_filename_for_version(context, self.version)
+        cache_filename_for_version(context, version)
       end
 
       def cache_filename_for_version(context, version)
-        Pathname(Cacheable.base_path).join("#{self.name}-#{self.instance_name(context)}-#{version}.data")
+        Pathname(Cacheable.base_path).join("#{name}-#{instance_name(context)}-#{version}.data")
       end
 
       def json_filename(context, version)
-        Pathname(Cacheable.base_path).join("..", "notebook", "#{self.name.gsub(":","-")}-#{self.instance_name(context)}-#{version}.data.json")
+        Pathname(Cacheable.base_path).join('..', 'notebook', "#{name.tr(':', '-')}-#{instance_name(context)}-#{version}.data.json")
       end
 
       def instance_name(context)
         context[:instance_name]
       end
-
     end
 
     def time_elapsed=(te)

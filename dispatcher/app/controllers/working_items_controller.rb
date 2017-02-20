@@ -1,7 +1,6 @@
 class WorkingItemsController < ApplicationController
   before_action :set_working_item, only: [:submit_job, :show, :edit, :update, :destroy]
 
-
   def regenerate
     WorkingItem.regenerate
     redirect_to '/'
@@ -28,8 +27,7 @@ class WorkingItemsController < ApplicationController
 
   # GET /working_items/1
   # GET /working_items/1.json
-  def show
-  end
+  def show; end
 
   # GET /working_items/new
   def new
@@ -37,11 +35,10 @@ class WorkingItemsController < ApplicationController
   end
 
   # GET /working_items/1/edit
-  def edit
-  end
+  def edit; end
 
   #
-  #POST /working_items
+  # POST /working_items
   # POST /working_items.json
   def create
     @working_item = WorkingItem.new(working_item_params)
@@ -82,13 +79,14 @@ class WorkingItemsController < ApplicationController
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_working_item
-      @working_item = WorkingItem.find(params[:id])
-    end
 
-    # Never trust parameters from the scary internet, only allow the white list through.
-    def working_item_params
-      params.require(:working_item).permit(:work_type, :content, :version, :status, :upload)
-    end
+  # Use callbacks to share common setup or constraints between actions.
+  def set_working_item
+    @working_item = WorkingItem.find(params[:id])
+  end
+
+  # Never trust parameters from the scary internet, only allow the white list through.
+  def working_item_params
+    params.require(:working_item).permit(:work_type, :content, :version, :status, :upload)
+  end
 end

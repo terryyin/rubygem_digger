@@ -10,16 +10,14 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170205103225) do
-
-  create_table "working_items", force: :cascade do |t|
-    t.string   "work_type"
-    t.string   "content"
-    t.integer  "version"
-    t.integer  "status"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["work_type", "content", "version"], name: "index_working_items_on_working_type_and_content_and_version", unique: true
+ActiveRecord::Schema.define(version: 20_170_205_103_225) do
+  create_table 'working_items', force: :cascade do |t|
+    t.string   'work_type'
+    t.string   'content'
+    t.integer  'version'
+    t.integer  'status'
+    t.datetime 'created_at', null: false
+    t.datetime 'updated_at', null: false
+    t.index %w(work_type content version), name: 'index_working_items_on_working_type_and_content_and_version', unique: true
   end
-
 end
