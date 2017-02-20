@@ -26,7 +26,7 @@ result of this research might not be deterministic because the scope of this
 research is limited to source code. The reasons why some authors gave up their
 open source projects are not always found in the source code.
 
-# Acknowledgements
+# Acknowledgments
 
 # Introduction
 
@@ -53,8 +53,8 @@ research.
 
 Simple statistics and machine learning method were applied to the processed data
 generated from the source code. I also built a prototype software that does all
-these works. The purpose of the prototype is to proove the concept. It's not
-intended to become a commercially useable tool. It's not intended to be
+these works. The purpose of the prototype is to prove the concept. It's not
+intended to become a commercially usable tool. It's not intended to be
 generalized to other types of source code prediction.
 
 
@@ -87,7 +87,7 @@ The outcome of this research includes:
 * I tried to prove the theory of using software package change history to
   predict software maintainability.
 * The prototype software tool.
-* Proccessed and labeled data in the JSON format.
+* Processed and labeled data in the JSON format.
 
 # Background and review of Literature
 
@@ -114,7 +114,7 @@ very painful.
   which had been actively maintained for more than ten months before they stopped.
   We labeled them as "abandoned" gems.
 * There are also many Ruby gems that have been maintained actively for a long
-  time with many releases. From software maintainability's perspective, they are
+  time with many releases. From software maintainability perspective, they are
   at least "maintainable" code some releases back from the recent.
   We labeled them as "maintained."
 
@@ -249,7 +249,7 @@ Inspired by Lohn (2016)'s keynote speak at a Python Conference, I will also try
 to apply fractal dimension metrics on the code change history. Fractal dimension
 is a complexity ratio showing how detail in a pattern changes with the scale at
 which it is measured.(Mandelbrot 1967). One of Lohn (2016)'s example is to apply
-fractal dimension on the Fixfox crash report. The stack trace in the report can
+fractal dimension on the Firefox crash report. The stack trace in the report can
 be regarded as a sequence of offsets in the computer memory. By getting the
 fractal dimension metrics of these sequences, Lohn claimed that sometimes he
 found seemingly unrated software bugs with similar fractal dimension to have the
@@ -278,7 +278,7 @@ collection, data processing, data cleaning, exploratory data analysis (EDA),
 machine learning and the final data product. In my prototype software, each part
 may be built with a different programming language.
 
-The raw data collection, data processing, and data clear=ning part are built
+The raw data collection, data processing, and data cleaning part are built
 using the Ruby programming language. Choosing Ruby is because of the subject
 being studied is RubyGems. It's easier to use the same programming language to
 extract information. Another reason for choosing Ruby is the Ruby on Rails web
@@ -349,7 +349,7 @@ support data processing tasks and machine learning.
 
 * **Cyclomatic Complexity**: is a measurement of how complicated a software routine is (McCabe 1976).
   It measures  the number of linearly-independent paths is the source code.
-  It's typically applied on the funtion/method level.
+  It's typically applied on the function or method level.
   I will use CCN for Cyclomatic Complexity Number.
 
 **RubyGems terms**
@@ -401,7 +401,7 @@ diagram of the prototype software.
 
 ![](uml.png)
 
-This class diagram uses the UML notions define by Larman (2012).
+This class diagram uses the UML notions defined by Larman (2012).
 
 * The `Digger` class defines the process of "digging" the source code.
   It includes a spec for the digging and several `Step`s for the digging work.
@@ -426,8 +426,8 @@ This class diagram uses the UML notions define by Larman (2012).
   get a work from the `WorkingItems`, if there is any. The `Client`s, which are
   located on many physical machines will use the same library to do the analysis
   and submit to the `Dispatcher` when it's done.
-* `Dispatcher` will test with the `Digger` to see if there's any more work
-  needed. if there's no more, `Digger` will dump the data to a file in JSON
+* `Dispatcher` will test with the `Digger` to see if there is any more work
+  needed. If there's no more, `Digger` will dump the data to a file in JSON
   format for further analysis.
 
 The data flows like the figure below.
@@ -445,7 +445,7 @@ EDA and machine learning are done using the Python programming language with the
 
 # Implementation
 
-## Collecting the raw data
+## Collecting raw data
 
 RubyGems is a package-management system for Ruby applications and libraries
 (Berube 2007). A "gem" is the Ruby application or library being managed.
@@ -530,7 +530,7 @@ after the last version was released.
 | Index | Gem | Open Issues | Years stopped | URL | Possible Reason For Stopping |
 |---|---|---|---|---|---|
 | 1 | axlsx | 131 | 3.4 | https://github.com/randym/axlsx | Still actively being developed, but having too many open issues and pull requests. |
-| 2 | cancan | 205 | 3.7 | https://github.com/ryanb/cancan | Became very popular when released in 2009 but the author stopp all development activity in 2013. To keep the gem going, the community forked it and created CanCanCan (https://github.com/CanCanCommunity/cancancan). |
+| 2 | cancan | 205 | 3.7 | https://github.com/ryanb/cancan | Became very popular when released in 2009 but the author stopped all development activity in 2013. To keep the gem going, the community forked it and created CanCanCan (https://github.com/CanCanCommunity/cancancan). |
 | 3 | chronic | 99 | 3.4 | https://github.com/mojombo/chronic | Nearly no development activity for 3 years. |
 | 4 | fakeweb | 30 | 6.4 | https://github.com/chrisk/fakeweb | Just stopped. |
 | 5 | fnordmetric | 96 | 3.6 | https://github.com/paulasmuth/fnordmetric | Just stopped. Having over 400 forks but only 6 pull requests. |
@@ -831,11 +831,11 @@ rubocop_columns = [
  ]
 ```
 
-## Simple Statistics
+## Simple statistics
 
 After getting the labeled data, I did some simple statistics to see if I can get
 some low hanging fruits. So I compared the mean and standard deviation of all
-the metrics. All countings are transformed to density per KNLOC to make the data
+the metrics. All counts are transformed to density per KNLOC to make the data
 comparable. At this point, the "maintained" data already excluded the most
 recent 10 to 18 months, which indicates that they are really "maintainable." And
 the simple statistics are done on the metrics got from the latest version in our
@@ -1050,7 +1050,7 @@ plt.xlabel('k neighbours')
 
 #### More Algorithms
 
-The acuracy result is not getting a lot better with kNN. The best it can get is
+The accuracy result is not getting a lot better with kNN. The best it can get is
 around 60%. I moved on to try multiple machine learning method provided by
 scikit-learn. Including:
 
@@ -1111,7 +1111,7 @@ The ensemble technique employed here is bagging, as proposed by Elish et al.
 | kNN | 0.623 | 0.615 | 0.631 | 0.623 | 0.614 |
 | ensemble_bagging_with(DecisionTreeRegressor()) | 0.595 | 0.673 | 0.560 | 0.589 | 0.573 |
 | ensemble with kNN | 0.673 | 0.672 | 0.673 | 0.672 | 0.670 |
-| ensemble wigh LR | 0.674 | 0.672 | 0.679 | 0.670 | 0.659 |
+| ensemble with LR | 0.674 | 0.672 | 0.679 | 0.670 | 0.659 |
 
 A trap here is that the data is quite redundant. Metrics do not change very much
 every month and the data for each month is not too different. When using random
@@ -1141,12 +1141,12 @@ different labeling specs.
 # Results and prediction
 
 We failed to find a combination of a way of labeling the data and a machine
-learning alorithm to do meaningful prediction. The prototype software we build
+learning algorithm to do meaningful prediction. The prototype software we build
 is capable of using the model to do prediction, but we won't do it unless we
-have better acuracy to at least 75%.
+have better accuracy to at least 75%.
 
 This doesn't mean we totally failed in this experiment. The simple analysis
-still shows there are consistent differences between the labelled data. It's
+still shows there are consistent differences between the labeled data. It's
 just the noise in the data is still too big and we haven't found the best
 algorithm yet.
 
@@ -1178,7 +1178,7 @@ software is statistically higher than the well-maintained ones. However, none of
 the individual code smells has signification impact on the classification.
 `TooManyStatements` has greater impact comparing to the others. But it's again
 rather about style than the code structure. I believe this doesn't make the
-concept of "code smells" less useful, but we can see that automatical code smell
+concept of "code smells" less useful, but we can see that automatic code smell
 detection for dynamic-typing language like Ruby still need a lot of improvement.
 
 
@@ -1198,7 +1198,7 @@ already. As Beller et al (2016) discovered that 60% of the popular open source
 project use some sort of static analysis tool. However, lizard is not known to
 the Ruby community; both Rubocop and Reek has been developed actively in the
 recent years. Most of the warnings they produce don't exist before the version
-we examed. The impact on prediction accuracy might be bigger when predicting
+we examined. The impact on prediction accuracy might be bigger when predicting
 more recent Ruby software as Rubocop is getting more popular among the Ruby
 developers.
 
@@ -1220,7 +1220,7 @@ stiff, 2017)
 ## Recommendations / Prospects  for Future Research / Work
 
 Similar works can be done for the Python Package Index (Van Rossum 2007),
-JavaScript nmp (Wittern et al. 2016) and many other package management systems
+JavaScript npm (Wittern et al. 2016) and many other package management systems
 for open source software.
 
 In my processed data, I use the "age" until a software component becoming
