@@ -264,47 +264,53 @@ software bugs with similar fractal dimension to have the same cause.
 
 ## Theory
 
-**Assumption 1**: We can derive a useful model when applying machine-learning to
-a large variety of metrics generated from the source code of a vast number of
-open source projects. These projects are labeled as abandoned, and
-well-maintained. This model can be used to predict the probability of becoming
-abandonware for other software projects.
+**Assumption 1**: We can derive a useful predictive model of abandonware by
+applying machine learning to a large variety of metrics generated from the
+source code of a vast number of open source projects using a subset of projects
+that are labeled as abandoned or well-maintained. This model can be used to
+predict the probability for a software projects to become abandonned.
 
-**Assumption 2**: The prediction model will improve in accuracy when using
-change history rather than a static view of one version of the software. I
-assume the change data and process-related metrics contain more information
-about the defect distribution in software than the source code itself (Moser
-2008).
+**Assumption 2**: The accuracy of the prediction model should improve if change
+history is considered in addition to simple static view of one version of the
+software. I assume the change data and process-related metrics contain more
+information about the defect distribution in software than the source code
+itself (Moser 2008).
 
 **Prototype software**: A prototype software is built to implement and verify
-the assumptions. The software project is hosted at
+the above assumptions. The software project is hosted at
 https://github.com/terryyin/rubygem_digger under the MIT License (Rosen 2005).
+[IVZ: is this needed under Theory?]
 
 Hayes (2014)'s data science process model divides the process into raw data
 collection, data processing, data cleaning, exploratory data analysis (EDA),
 machine learning and the final data product. In my prototype software, each part
 may be built with a different programming language.
 
-The raw data collection, data processing, and data cleaning part are built
-using the Ruby programming language. Choosing Ruby is because of the subject
-being studied is RubyGems. It's easier to use the same programming language to
-extract information. Another reason for choosing Ruby is the Ruby on Rails web
-service framework (Bächle & Kirchberg 2007). Because of the heavy load of
-computing resource needed for the job, I built a simple distributed computing
-system using Ruby on Rails.
+Raw data collection, data processing, and data cleaning parts were built using
+the Ruby programming language. The choice of Ruby was mainly because of the
+on the focus on RubyGems. It's easier to use the same programming
+language to extract information.
+[IVZ: Weak argument. Downloading and data pre-processing should be mostly
+language independent. You also say above that your own tool (lizard) handles
+multiple languages]
+
+Another reason for choosing Ruby is the Ruby on Rails web service framework
+(Bächle & Kirchberg 2007). Downloading, parsing and analyzing the source code of
+all the packages on RubyGems requires significant computational resources.
+Ruby on Rails allowed me to build a simple distributed computing system with
+relative ease.
 
 The exploratory data analysis (EDA), machine learning and the final data product
-is developed with the Python programming language. The reason for choosing
-Python is because it's rich toolboxes of big data and machine learning
-libraries. I mainly use the Scikit-learn library (Pedregosa, et al 2011) for
-this job. Another reason for using Python is the Jupyter platform (Kluyver et
-al. 2016). Jupyter is an interactive platform to create reproducible
-computational workflows. Jupyter is implemented in Python and has splendid
-support for using Python in it. Scikit-learn library works perfectly in Jupyter.
-Jupyter is a nearly perfect EDA platform for me.
+was developed using Python programming language. The reason for choosing Python
+is because of its rich collection of big data and machine learning libraries. I
+mainly used the scikit-learn library (Pedregosa et al. 2011) which is built on
+top of the NumPy library. Another reason for using Python is the Jupyter
+platform (Kluyver et al. 2016).  Jupyter is an interactive platform for creating
+reproducible computational workflows.  Scikit-learn library works perfectly in
+Jupyter. Jupyter is a nearly perfect EDA platform for me.
 
-Numpy, Pandas and Matplotlib are used in the EDA process. The Python code that
-imports these libraries is:
+In addition to scikit-learn and numpy, Pandas and Matplotlib were used in the
+EDA process. The Python code that imports these libraries is:
 
 ```python
 import numpy as np
@@ -314,7 +320,7 @@ import seaborn as sea
 %matplotlib inline
 ```
 
-The Python code that imports Scikit-learn library:
+The Python code that imports scikit-learn library:
 
 
 ```python
@@ -330,44 +336,44 @@ from sklearn.grid_search import GridSearchCV
 
 ## Terms
 
-**Data science process** When doing the research, I use the data science process
+**Data science process** In this work I use the data science process
 defined by Hayes (2014). It includes: raw data collection, data processing, data
-cleaning, exploratory data analysis (EDA), machine learning and build data
+cleaning, exploratory data analysis (EDA), machine learning and final data
 product.
 
 ![](process.png)
 
-**Ruby programming language** is a programming language designed by Matsumoto
+**Ruby** is a programming language designed by Matsumoto
 (2002) in the mid-1990s.
 
 **Ruby on Rails** is a web application framework implemented in Ruby (Bächle et al. 2007)
 
-**Python programming language** is a programming language designed by Van Rossum
-(2007). It's widely used in data science. It has many open software tools to
-support data processing tasks and machine learning.
+**Python** is a programming language designed by Van Rossum (2007) in early
+1990s. It is currently very popular in data science. It has many open
+software tools supporting data processing tasks and machine learning.
 
 **Code Smells** are the symptoms of poor design and implementation choices
 (Fowler et al. 1999).
 
 **Software Metrics**:
 
-* **NLOC**: The net length of source code, is the lines of source code excluding
-    the comments and empty lines. (Gilb 977)
+* **NLOC**: The net length of source code, i.e number of lines of source code
+  excluding comments and empty lines. (Gilb 977)
 
 * **Cyclomatic Complexity**: is a measurement of how complicated a software routine is (McCabe 1976).
-  It measures  the number of linearly-independent paths is the source code.
-  It's typically applied on the function or method level.
+  It measures the number of linearly-independent paths in the source code.
+  It is typically applied at the function or method level.
   I will use CCN for Cyclomatic Complexity Number.
 
 **RubyGems terms**
 
 To avoid confusion, I used the following terms when describing a software package on RubyGems:
 
-* A **Gem** is a software project hosted by RubyGems.org.
+* A **Gem** is a software project hosted on RubyGems.org.
   It has a unique name and may have multiple versions.
 * A **version** is one snapshot of the code that has a version number.
   We will sometimes also call it a "**Release**"
-* A **package** the cohesive data related to one version of a gem.
+* A **package** is a cohesive data related to one version of a gem.
   It includes the specification and all the code.
   One thing needs to be emphasized is a package's file extension is `.gem`.
 
@@ -376,7 +382,7 @@ To avoid confusion, I used the following terms when describing a software packag
 
 ## The working process
 
-I use the data science process defined by Hayes (2014) and tailed it to my own process.
+I use the data science process defined by Hayes (2014) and tailored it to my own process.
 
 ![](myprocess.png)
 
@@ -387,15 +393,15 @@ The steps are:
    for any package.
 2. *Find gems that can be labeled as abandoned or well-maintained*: It includes
    refining the criteria.
-3. *Analyze code*: is to generate analysis data from the labeled Ruby gems. It
+3. *Analyze code*: Generate analysis data from the labeled Ruby gems. It
    includes both the last version of observation and historical versions.
-4. *Machine learning* is to use machine learning tools to select and build a
-   classifying model. Unlike the prior steps, this step and the following step
+4. *Machine learning*: Apply machine learning tools to select and build a
+   classifying model. Unlike prior steps, this step and the following step
    will be done with the Python programming language. (The previous ones are in
    Ruby, for the convenience of working with Ruby gems.)
-5. *Regression and model evaluation* is the fine tune the classifier and select
-   features.
-6. *Evaluate popular Ruby projects* is to build a usable software tool and use
+5. *Regression and model evaluation*: Fine tuning of the classifier and
+   selection of features.
+6. *Evaluate popular Ruby projects*: Build a usable software tool and use
    it to predict the likelihood of Being abandoned.
 
 ## The software structure
@@ -403,7 +409,7 @@ The steps are:
 ### The data processor
 
 The avoid repeated work, interim data are cached with versions. This is a
-general ability needed by several different types of data. Below is an UML class
+general ability needed by several different types of data. Below is a UML class
 diagram of the prototype software.
 
 ![](uml.png)
@@ -413,78 +419,78 @@ This class diagram uses the UML notions defined by Larman (2012).
 * The `Digger` class defines the process of "digging" the source code.
   It includes a spec for the digging and several `Step`s for the digging work.
 * The `Step`s are defined with a common `Step` super class, which is cacheable.
-  So if a step has been done previously and the spec from the `Digger` didn't change,
-  it will just use the cached data instead of recalculating everything.
+  If a step has been done previously and the spec from the `Digger` didn't change,
+  it will use the cached data instead of recalculating everything.
   `Step`s ask the `GemSpecs` to do the real work.
 * `GemSpecs` is the collection of all the gems found in the RubyGems mirror and
-  all the versions information. It includes tens of thousands ruby Gems, which
-  we use the `GemWithHistory` to represent.
-* `GemWithHistory` represents a gem, and it's history. So it's not just one
-  software package but a list of software packages with different versions.
+  all the versions information. It includes tens of thousands of ruby Gems.
+* `GemWithHistory` represents a gem, and it's history. It is not just one
+  software package, but a list of software packages with different versions.
 * `PackageWrapper` represents the package, which is the basic unit in the
   RubyGems library. Source code can be extracted out of a package. The
   `PackageWrapper` knows how to get raw analysis data from the third-party
   static analysis tools. It also knows how to collection extra information from
-  Github.com, if the package indicates its homepage is a github.com link.
-* `Dispatcher` and its `Client` are RESTful API implemented in Ruby on Rails.
-  The `Dispatcher` talks to the `Digger` to see which packages need to be
-  analyzed, then store that information in its `WorkingItems` database. 
-* When the `Client` requires a work from the `Dispatcher`, the `Dispatcher` will
-  get a work from the `WorkingItems`, if there is any. The `Client`s, which are
-  located on many physical machines will use the same library to do the analysis
-  and submit to the `Dispatcher` when it's done.
-* `Dispatcher` will test with the `Digger` to see if there is any more work
-  needed. If there's no more, `Digger` will dump the data to a file in JSON
+  Github.com, if the package indicates that it is hosted on github.com.
+* `Dispatcher` and `Client` are RESTful APIs implemented in Ruby on Rails.
+  The `Dispatcher` communicates with the `Digger` to see which packages need to be
+  analyzed, then stores that information in the `WorkingItems` database. 
+* When the `Client` requests a job from the `Dispatcher`, the `Dispatcher` will
+  get a item from the `WorkingItems`, if there is any. The `Client`s, which are
+  running on many physical machines will use the same library to do the analysis
+  and submit to the `Dispatcher` when the job is done.
+* `Dispatcher` will check the `Digger` for any remaining work.
+  If there is no more, the `Digger` will save the data to a file in JSON
   format for further analysis.
 
-The data flows like the figure below.
+The data flows as indicated in the following figure:
 
 ![](flow.png)
 
 ### EDA and Machine Learning
 
-EDA and machine learning are done using the Python programming language with the Jupyter platform and sk-learn library. It includes:
+EDA and machine learning are done using the Python programming language and
+scikit-learn library inside the Jupyter platform. The main steps include:
 
-* Data importer to import the data from JSON file.
-* Simply analysis to get the mean, standard deviation, max and min.
-* A framework to evaluation different EDA models.
-* A tool to apply the result to do prediction.
+* Data importer to read data from JSON file.
+* Simple analysis to get the mean, standard deviation, max and min.
+* A framework to evaluate different EDA models.
+* A tool to apply machine learning results to do predictions.
 
 # Implementation
 
 ## Collecting raw data
 
 RubyGems is a package-management system for Ruby applications and libraries
-(Berube 2007). A "gem" is the Ruby application or library being managed.
-RubyGems.org is an instance of such a system and is the biggest host for open
-source Ruby gems. After installed Ruby, a simple command will down and unpack
-the Ruby gem of a certain version from the remote server (by default
+(Berube 2007). A "gem" is a Ruby application or library being managed.
+RubyGems.org is an instance of such a system, and it is the biggest host for
+open source Ruby gems. After installing Ruby, a simple command will down and
+unpack a Ruby gem of a certain version from the remote server (by default
 RubyGems.org):
 
     gem unpack <gem name> -v<gem version>
 
-But given the network and service speed, it would be impractical to fetch the
-gems from RubyGems.org. The entire RubyGems.org database can be mirrored using
+But given the network and service speed, it is impractical to fetch the gems
+from RubyGems.org. The entire RubyGems.org database can be mirrored using the
 open source tool (https://github.com/rubygems/rubygems-mirror). The whole
-database is around 300GB as of the beginning of 2017. It will extract to about
-1.4TB Ruby source code, and that's about twenty billion lines of code. Then
+database is around 300GB as of the beginning of 2017, but after decompression,
+it is about 1.4TB and about twenty billion lines of Ruby source code.  Then
 using the Ruby Gem library (https://github.com/rubygems/gems), we can get all
-the gems specification and unpack the packages when needed.
+the gems specifications, and unpack packages when needed.
 
 ### Versions simplification
 
-To simplify and normalize the data, I keep only one last version for a gem in a
+To simplify and normalize the data, I keep only the last version for a gem in a
 month, if there are multiple versions in that month.
 
-After this simplification, I made the assumption that a gem has more than 10
-months with versions means they are the kind of software that needs continuous
-updates.
+After this simplification, I made the assumption that if a gem has more than 10
+months with versions, it means they are the kind of software that needs
+continuous updates.
 
 ### Labeling the data
 
 A gem will be labeled as "abandoned" if it:
 
-* Has more than `maintained_months` months with new versions
+* Has more than `maintained_months` months with new [IVZ: latest?] versions
 * Has no new releases for two years
 * Has more than `min_nloc` NLOC in its last version
 
@@ -494,18 +500,20 @@ A gem will be labeled as "maintained" if it:
 * Has more than `min_nloc` NLOC in its last version
 
 `well_maintained_months` (20 ~ 32) is a much large number than `maintained_month` (10 ~ 20). 
+[IVZ: why use different nb of months?]
 
 ### Remove recent months for "well maintained" gems
 
-For the data that's labeled as `maintained`, I remove the last 15 months because
-we don't know what will happen to them next, but 15 months ago they are
-"maintainable" software as they have been maintained for at least another 15
-months.
+For the data that is labeled as `maintained`, I remove the last 15 months.  We
+know that this software is "maintainable" since it is actually actively
+maintained, but we need to compare it with the other group at the same time
+point when we suspect that a projects may become abandoned.
+
 
 ### Complicated enough
 
-To reduce the irregular data, I removed the gems that have less than a certain
-number of NLOC.
+To further reduce data irregularities, I removed the gems that have less than a
+certain number of NLOC.
 
 Different specifications are used to label data.
 
@@ -518,20 +526,19 @@ Different specifications are used to label data.
 | 7| longer maintained for good| 12| 2000| 30| 15| 15|
 | 8| balanced| 15| 3000| 30| 10| 15|
 
-It's still quite objective to define what an "abandonware" and "well maintained"
-Ruby gem is. I will compare the result generated by different labeling
+It is still quite objective to define which Ruby gem is "abandonware" or "well
+maintained". I will compare the results generated by different labeling
 specifications.
 
 ### Manual confirmation
 
-Using labeling specification index 1, out of 387 stopped and complicated enough
-gems 199 listed their Github URL as the homepage for the gem. A lot of the
-others also use Github as their version control system but have another web page
-as homepage. Among these gems, 80 of them have open issues on Github after the
-last version was released, which means there are still need not fulfilled for
-these gems. But they stopped.
+Using labeling specification index 1, out of 387 abandonned but complicated
+enough gems, 199 were found with Github URL as gem's homepage.  Among these
+gems, 80 have open issues on Github after the last version was released, which
+means there are still needs that are not fulfilled for these gems. But 
+maintenance of these gems has stopped.
 
-Here's an incomplete list for gems having at least ten open issues on Github
+Here is an incomplete list for gems having at least ten open issues on Github
 after the last version was released.
 
 | Index | Gem | Open Issues | Years stopped | URL | Possible Reason For Stopping |
@@ -540,7 +547,7 @@ after the last version was released.
 | 2 | cancan | 205 | 3.7 | https://github.com/ryanb/cancan | Became very popular when released in 2009 but the author stopped all development activity in 2013. To keep the gem going, the community forked it and created CanCanCan (https://github.com/CanCanCommunity/cancancan). |
 | 3 | chronic | 99 | 3.4 | https://github.com/mojombo/chronic | Nearly no development activity for 3 years. |
 | 4 | fakeweb | 30 | 6.4 | https://github.com/chrisk/fakeweb | Just stopped. |
-| 5 | fnordmetric | 96 | 3.6 | https://github.com/paulasmuth/fnordmetric | Just stopped. Having over 400 forks but only 6 pull requests. |
+| 5 | fnordmetric | 96 | 3.6 | https://github.com/paulasmuth/fnordmetric | Just stopped. Has over 400 forks, but only 6 pull requests. |
 | 6 | i18n | 29 | 2.1 | https://github.com/svenfuchs/i18n | Wrong label. Stable popular component. Will have a new release soon. |
 | 7 | jsduck | 81 | 3.3 | https://github.com/senchalabs/jsduck | Little development activity. |
 | 8 | ooor | 22 | 3.7 | https://github.com/akretion/ooor | Still maintained (38 commits in 2016). But somehow no new release. |
@@ -551,14 +558,15 @@ after the last version was released.
 | 13 | webrat | 22 | 6.1 | https://github.com/brynary/webrat | Just stopped. |
 | 14 | youtube_it | 22 | 2.5 | https://github.com/kylejginavan/youtube_it | Just stopped. |
 
-Most of the above 14 gems I checked manually stopped in a way that will surprise
-an outsider who depends on the gem. With below exceptions:
+Most of the above 14 gems that were checked manually stopped being actively
+maintained in a way that would surprise an outsider who depend on the gem with
+the following exceptions:
 
 * `i18n` is mistakenly marked as *bad*. It has a new release (January 31, 2017) right after I mirror the RubyGems. It provides internationalization support for Ruby since 2008.
-* `axlsx`, `ooor` and `veewee` still have some maintenance activity on their Github repositories. But they have published any new release for more than two years, and people have to fork their code to make changes.
+* `axlsx`, `ooor` and `veewee` still have some maintenance activity on their Github repositories. But they have not published any new release for more than two years, and people have to fork their code to make changes.
 
-After manually check 14 gems, I found 11 of them just stopped in a surprising
-way, 3 of them still have development activities but stop making any new
+After manually checking 14 gems, I found 11 of them just stopped in a surprising
+way, 3 of them still have development activities, but stopped releasing new
 versions despite the many open issues.
 
 ## Getting the Static Code Analysis
@@ -566,32 +574,33 @@ versions despite the many open issues.
 Static code analyzers generate the basic building blocks for the processed data.
 
 Before making any judgment regarding the usefulness of the metrics, I try to
-collect as many of them as possible. The efficiency will be check when later
-doing the simple statistics and machine learning. The conclusions can be found
+collect as many of them as possible. The efficiency will be checked later when
+doing simple statistics and machine learning. The conclusions can be found
 in the part On Static Code Analyzing.
 
-Three open source software tools are employed for the static code analyzing.
-They are Lizard, RuboCop and Reek.
+Three open source software tools were employed for static code analysis:
+Lizard, RuboCop and Reek.
 
-**Lizard** (Kluth, et al. 2016) is an open source static code analyzer mostly
-does cyclomatic complexity counting. It supports a large number of different
-programming languages including Ruby. It also has easy to use interface to
-extend its analyzing features. As I am the main author and owner of the lizard
-project, a new requirement can be added to lizard when needed without waiting.
+**Lizard** (Kluth, et al. 2016) is an open source static code analyzer focusing
+primarily on cyclomatic complexity counting. It supports a large number of
+different programming languages including Ruby. It also has an easy to use
+interface for extending its analyzing features. As I am the main author and
+owner of the lizard project, new requirements can be added when needed without
+waiting.
 
 **RuboCop** (Batsov, 2012) is a Ruby static code analyzer. It reports a large
-variety of potentially code problems but mostly focuses on coding styles. It's
+variety of potential code problems, but mostly focuses on coding styles. It is
 hard to prevent a static code analyzer focusing on coding styles to be
 opinionated. RuboCop is so opinionated that it even has a `-a` option to
 automatically 'correct' some of the problems it discovers. My hope for RuboCop
 wasn't high when getting it involved. As mentioned above, I just wanted to get
-as much metrics as possible without judgment. But the result surprised me.
+as much metrics as possible without judgment. But the results surprised me.
 
 **Reek** is a code smell detector for Ruby by Rößner (2008). Ruby is a
-dynamic-typed programming language (Paulson 2007). It is not as easy to get the
-meaning behind the code by a static analyzer as a static-typed language like
-Java. A side effect of this research is to evaluate the efficiency of Reek in
-discovering meaningful code smells.
+dynamically typed programming language (Paulson 2007). It is not as easy to get
+the meaning behind the code by a static analyzer compared to statically typed
+languages like Java. A side effect of this research was evaluation of the
+efficiency of Reek in discovering meaningful code smells.
 
 ### Distributed Computing
 
