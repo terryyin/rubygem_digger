@@ -1,3 +1,8 @@
+#
+# RubygemDigger::GemHistory is a collect of historical version
+# for a certain ruby gem. It contains multiple packages.
+#
+
 require 'rubygem_digger/package_wrapper'
 
 module RubygemDigger

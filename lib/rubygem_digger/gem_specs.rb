@@ -1,3 +1,7 @@
+#
+# RubygemDigger::GemSpec is the collection of all gems info
+#
+
 # require "gem_history"
 require 'rubygems/package'
 require 'rubygem_digger/histories_wrapper'

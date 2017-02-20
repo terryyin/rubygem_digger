@@ -1,3 +1,22 @@
+#
+# RubygemDigger::Cacheable is the trait for any value
+# class to become cacheable.
+#
+# The global setting:
+#
+#     RubygemDigger::Cacheable.bash_path
+#
+# decides where to store the cached data.
+# The file name will be the class name plus the version number,
+# if it's a singleton object. Otherwise these will also be something
+# to indenfy the object in the file name.
+#
+# Interfaces to implement to become 'cacheable':
+#
+#   create: creating the object (without caching)
+#
+#
+
 require 'pathname'
 require 'zlib'
 

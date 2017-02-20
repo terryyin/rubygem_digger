@@ -1,12 +1,10 @@
+#
+# RubygemDigger::Digger oganize the data digging steps
+#
+
 require 'rubygem_digger/steps'
 
 module RubygemDigger
-  class DigSuccess
-    def successful?
-      true
-    end
-  end
-
   class Digger
     def past_specs
       {
@@ -103,10 +101,6 @@ module RubygemDigger
         Steps::GenerateJsonForLastVersions,
         Steps::GetAllLizardReport,
         Steps::GenerateJsonForAllVersions,
-        # files diff
-        # get rubygems downlowds count
-        # split the rubocop styles, as it's the biggest finding
-        # remove global from lizard report, put back the data.
       ]
     end
 

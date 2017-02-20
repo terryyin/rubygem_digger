@@ -1,3 +1,8 @@
+#
+# RubygemDigger::HistoriesWrapper encapsulate the iterative
+# operations on a collection of gems with many versions (history).
+#
+
 module Enumerable
     def sum
       self.inject(0){|accum, i| accum + i }

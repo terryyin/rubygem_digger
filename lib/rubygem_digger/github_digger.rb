@@ -1,3 +1,8 @@
+#
+# RubygemDigger::GithubDigger knows how to get information
+# from Github.
+#
+
 require "rubygem_digger/cacheable"
 require 'github_api'
 

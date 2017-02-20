@@ -1,3 +1,8 @@
+#
+# RubygemDigger::PackageWrapper represent the one version of a gem
+# with its source code, and encapsulate the operations on it.
+#
+
 require 'rubygem_digger/cacheable'
 require 'tmpdir'
 require 'open3'

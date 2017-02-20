@@ -1,3 +1,8 @@
+#
+# RubygemDigger::Step has many subclasses defining
+# what to do in each step
+#
+
 module RubygemDigger
   module Steps
     module Step
