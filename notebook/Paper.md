@@ -12,16 +12,18 @@ software packages developed to solve a specific need, and over time, this
 collection  evolves into a large third party packages ecosystem.  Many popular
 open source software projects are continuously developed and maintained.  But
 there are also once popular software components that get abandoned by the
-authors, leaving people who depend on them in an unexpected situation. The
-Source code contains all the efforts that went into making the software.  With a
-typical open source package management system, we can find the source code of
-all the packages and associated versions.  In this research, We tried to find a
-way to apply machine learning to the source code change history.  The primary
-goal of this study was to develop a model for predicting the risk of
+authors, leaving people who depend on them in an unexpected situation.
+[IVZ: I'd move the above paragraph to Introduction]
+
+The source code contains all the efforts that went into making the software.
+With a typical open source package management system, we can find the source
+code of all the packages and associated versions.  In this research, we tried to
+find a way to apply machine learning to the source code change history.  The
+primary goal of this study was to develop a model for predicting the risk of
 abandonware.  The secondary objective was to determine the reasons why some
 software projects are abandoned while others are well-maintained.  This work is
 based on data obtained from RubyGems.org -- the principal repository of Ruby
-packages.  Terabytes of Ruby source code has been explored and analyzed. The
+packages.  Terabytes of Ruby source code have been explored and analyzed. The
 result of this research might not be deterministic because the scope of this
 research is limited to source code. The reasons why some authors gave up their
 open source projects are not always found in the source code.
@@ -30,66 +32,67 @@ open source projects are not always found in the source code.
 
 # Introduction
 
-As Jack W. Reeves (1992) pointed out, "the design" of software is the source
-code itself. All the efforts in making software eventually embody its value via
-it's working source code. A programming languages like Ruby are distributed in
-the form of source code. We can find all the version history of open source
-software projects from a public package management system. This research tries
-to find a way of applying machine learning to the source code change history in
-the Ruby package management system in order to make predictions on software
-maintainability.
+As Jack Reeves pointed out in "What is software design" (1992), "the design" of
+software is the source code itself. In other words, the source code contains all
+the knowledge and efforts that went into creating valuable working software.
+Programming languages like Ruby are distributed in the form of source code. We
+can find the history of open source software projects from public package
+management systems. This research tries to find a way of applying machine
+learning to the source code change history in the Ruby package management system
+in order to make predictions on software maintainability.
 
 ## Scope
 
 The scope of this research is limited to the RubyGems.org package management
-system. There are terabytes of source code stored there. We have created
+system. It contains terabytes of ruby source code. We have created
 criteria for "abandoned" and "well-maintained" software, and focused the
-analysis only on packages that fit those criteria. Both the static state of the
-software project and the change history were analyzed. However, the change
-history was limited to the versions managed by RubyGems. More complete and
+analysis on packages that fit those criteria. Both the static state of
+projects and their change histories were analyzed. However, the change
+history was limited to the versions managed by RubyGems.org. More complete and
 detailed change history could be found from the software configuration
 management system (SCM). However, the SCM was not within the scope of this
-research.
+research. [IVZ: is SCM an accepted general term for version control system?]
 
-Simple statistics and machine learning method were applied to the processed data
-generated from the source code. I also built a prototype software that does all
-these works. The purpose of the prototype is to prove the concept. It's not
-intended to become a commercially usable tool. It's not intended to be
-generalized to other types of source code prediction.
+Simple statistics and machine learning methods were applied to data metrics
+extracted from projects' source code. This was done using custom software which
+can download and calculate all the metrics based on project's source code in
+parallel. The purpose of this software was to automate the data collection
+process. But it is more a proof of concept prototype developed without any
+intentions for making it a commercially usable tool. It is also not intended to
+be generalized to making other predictions based on source code analysis.
 
 
 ## Problem Statement
 
-I'm trying to ask and find the answers of the following two questions:
+I'm trying to ask and find the answers to the following two questions:
 
-1. Why are some open source software projects abandoned by their maintainers?
+1. Why some open source software projects are abandoned by their maintainers?
+   [IVZ: do you distinguish mainteners and authors?]
 2. What makes some open source software projects more maintainable than the others?
 
-The exploring of these two questions will be within the scope as mentioned previously.
+Exploration of these two questions will be within the above scope.
+
 
 ## Approach
 
-Some data science method are used here. The massive amount of data from open
-source package management system will be processed, analyzed and then use
-machine learning methods to find a model/some models. Eventually, this model
-will be used to predict the chance of being abandoned and maintainability of
-current open source projects.
+Several data science methods are used in this work. Massive amount of data from
+open source package management system will be processed, analyzed and then used
+in conjunction with several machine learning methods to find one or more
+predictive models for assessing the chance of maintainability or adandoning of
+open source projects.
 
-A prototype software tool is built to do all the above-mentioned work and prove
-the concept.
+## Outcomes
 
-## Outcome
+The outcomes of this work include:
 
-The outcome of this research includes:
-
-* I summarized the discovered difference between abandoned and well-maintained open source projects.
-  The discovery can be useful for people who want to build maintainable software.
-* I tried to prove the theory of using software package change history to
+* A summary of discovered differences between abandoned and well-maintained open source projects.
+  This information could be useful to people who care about software maintainability.
+* An attempt to prove the theory of using software package change history to
   predict software maintainability.
 * The prototype software tool.
 * Processed and labeled data in the JSON format.
 
-# Background and review of Literature
+# Background and review of literature
 
 ## Background
 
@@ -110,20 +113,23 @@ features, fix bugs, and adjust to new environments. When the developers of a
 library stop maintaining it, the users who depend on that library often find it
 very painful.
 
-* There are 1132 Ruby gems stop having any new versions since before 2015,
-  which had been actively maintained for more than ten months before they stopped.
+* There are 1132 Ruby gems without new versions since 2015, but
+  which had been actively maintained for more than ten months before that.
   We labeled them as "abandoned" gems.
-* There are also many Ruby gems that have been maintained actively for a long
+* There are also many Ruby gems that have been actively maintained for a long
   time with many releases. From software maintainability perspective, they are
   at least "maintainable" code some releases back from the recent.
   We labeled them as "maintained."
+  [IVZ: I'm not sure how to rephrase the above. In the current form
+  it is very unclear how "maintained" is defined.]
 
-There could be different reasons why certain Ruby project stopped, and why some
-are still continuing. RubyGems.org keeps all the gems versions and most of the
-gems developers tend to release often. Perhaps we can find a behavioral trace in
-the releases. Ruby libraries are distributed in the form of source code. If
-there's a pattern or we can get a model, then we can use it to evaluate Ruby
-source code or learn how to increase software maintainability.
+There could be different reasons why certain Ruby project are abandoned, while
+others continue to be maintained. Most developers of ruby gems tend to release
+new version often, and RubyGems.org store all versions. Perhaps we can find a
+behavioral trace in the history of gem's releases. Ruby libraries are
+distributed in the form of source code. If there is a pattern or we can get a
+model, then we can use it to evaluate Ruby source code or learn how to increase
+software maintainability.
 
 ### On maintainability
 
@@ -131,7 +137,7 @@ Software maintainability is an important factor in the cost of owning a
 codebase. IEEE defines it as “the ease with which a software system or component
 can be modified to correct faults, improve the performance or other attributes,
 or adapt to a changed environment” (IEEE, 1990). Here we will try to define
-maintainable software from the result of the development activity's perspective.
+maintainable software from the perspective of the development activity.
 Let's consider a software component in a maintained state at a certain point of
 time *T*.  If this component continues to be actively maintained to correct
 faults, improve the performance or other attributes, for a subsequent period
@@ -146,114 +152,115 @@ Based on the above assumption, we can label a version of software as
 
 ### On open source "Abandonware"
 
-Khong (2007) defined abandonware as the copyrighted work that's still owned by
-the owner, but because the owner ignored the work it is no longer commercially
+Khong (2007) defined abandonware as copyrighted work that is still owned by
+an owner, but because the owner ignored the work, it is no longer commercially
 available to the public. One problem caused by abandonware, as pointed out by
 Khong (2007) is that some software may need continual support from the vendors
 or producers. Many open source software also fit in the definition of
 abandonware, that is the source code is still available to the public, but the
 owner of the project ignores it.
+[IVZ: I'd use author instead of owner above]
 
-Khong (2007) mentioned, "A related problem of abandonment of computer software
-is the unavailability of source codes to correct or modify a computer program."
-It is no longer the case for open source abandonware. However having the source
-of origin doesn't solve the problem completely. It still takes the domain
-knowledge, the knowledge of the software structure, the interest and the effort
-to maintain the software, which the user of open source software might not have.
-And the original access point (the library server, the version control system)
-might still be owned by the original author. Then it's hard to continue the
-project and share the maintained work with the others.
+Khong (2007) also mentioned, "A related problem of abandonment of computer
+software is the unavailability of source codes to correct or modify a computer
+program." It is no longer the case for open source abandonware. However, having
+the source of origin doesn't solve the problem completely. It still requires
+domain knowledge, knowledge of software structure, interest and actual effort to
+maintain the software, which the user of the software might not have. And the
+original access point (the library server, the version control system) might
+still be owned by the original author. In this case it is hard to continue the
+project and share maintainance work with others.
 
-In my research of the Ruby open source abandonware, I found some have over a
-hundred open issues on Github. Some people depending on the software are crying
-for support. Some of the abandonware have tens of pull requests, but the owners
-just ignore them. One example is the CanCan Ruby gem created by Ryan Bates and
-first released in 2009 and soon becomes very popular (6000+ stars on Github as
-of today). It's an enhancement to the Ruby on Rails framework to support
-authorization. As it's intended to be part of the framework, projects depending
-on CanCan tend to have a tight coupling with it. When in 2013 the project
-suddenly stopped all development activity on Github, it became a big problem. We
-can see now the CanCan project has more than eight hundred forks. Some people
-chose to take the source code and maintain it by themselves. Eventually, some
-people formed the "CanCanCan Community" and continue the "CanCan" project under
-the name of "CanCanCan" (https://github.com/CanCanCommunity/cancancan).
+In my research of Ruby open source abandonware, I found some projects that have
+over a hundred open issues on Github. Some people depending on the software are
+desperate for support. Some of the abandonware have tens of pull requests
+(offers of bug fixes of new features by other developers) , but the owners just
+ignore them. A prominent example is the CanCan Ruby gem created by Ryan Bates.
+It was released in 2009 and quickly became very popular (over 6000 stars on
+Github as of today). It's an enhancement for the Ruby on Rails framework to
+support authorization. Since it was intended to be part of the framework,
+projects depending on CanCan tend to have a tight coupling with it. In 2013, all
+development activity on Github stopped suddenly, creating a big problem. We can
+conclude this from more than eight hundred forks of the CanCan project. Some
+people chose to take the source code and maintain it by themselves. Eventually,
+a group of people formed the "CanCanCan Community" to continue the "CanCan"
+project (https://github.com/CanCanCommunity/cancancan).
 
 Abandonware doesn't always indicate unmaintainable software. For example, "why
 the lucky stiff" (2017) is the nickname of a Ruby programmer who was considered
 one of the best Ruby programmers in the world (Spolsky 2005). He mythically
 disappeared since 2009. It's probably not right to call his legacy
 "unmaintainable."
+[IVZ: why? is everything this guy wrote still used and maintained by somebody else?]
 
 ## Literature Review
 
-Riaz, Mendes,& Tempero (2009) had a systematic review of software
-maintainability prediction and metrics. They found that the commonly used
-maintainability prediction models were based on algorithmic techniques. And the
-method could be particular with some maintenance type. Size, complexity and
-coupling, all these are collected at source code level only. There's a lack of
-accuracy measures and cross-validation. They also found that expert judgment
-plays an important role when designing these metrics.
+Riaz et al. (2009) did a systematic review of software maintainability
+prediction and metrics. They found that commonly used maintainability models
+were based on algorithmic techniques, and that the methods could be specific to
+maintenance type. Size, complexity and coupling are collected at source code
+level only. There is a lack of accuracy measures and cross-validation. They also
+found that expert judgment plays an important role when designing these metrics.
 
-Riaz et al. (2009) suggested the creation of more robust and reliable software
-maintainability prediction models. It is what I'm trying to achieve by this
-research. In my prediction model, although the underlying data is also mostly
-from source code, I put them in time scale and combined several tools' result to
-avoid prejudice. I intended to use machine learning mechanism to prevent expert
+Riaz et al. (2009) suggested creation of a more robust and reliable software
+maintainability prediction models. This is precisely what I'm trying to achieve
+in this work. Although the underlying data is also mostly from the source code,
+my prediction model includes time scale and uses several metric extraction tools
+to avoid prejudice. I intended to use machine learning to replace expert
 opinion.
 
-Beller, Bholanath, McIntosh, & Zaidman (2016) made a research on the usage of
-Automated Static Analysis Tools (ASATs). In their study, they found that 60% of
-the most popular open source projects use ASATs, although not embed them as part
-of their workflow. It might bias my data a bit, as some of the popular projects
-used ASAT, therefore the analyzing result has been optimized towards certain
-tool already. But I'm confident that it won't have a big impact. Because in my
-research, I only take code older than 2015. All the three tools I used has tons
-of new features since 2015.
+Beller et al. (2016) conducted research on the usage of Automated Static
+Analysis Tools (ASATs). In their study, they found that 60% of the most popular
+open source projects use ASATs, although they do not embed them as part of their
+workflow. This may introduce some bias into my data since it includes some
+popular projects, and therefore a fraction of projects may have been already
+optimized towards certain tool. However, I'm confident that this will not have a
+big impact because I only consider code older than 2015. All static analysis
+tools used in this work have many new features since 2015.
 
 My open source Static Analyzer "lizard" has been used in many large projects,
 including the ATLAS project at CERN (Kluth, et al. 2016). The ATLAS Experiment
-(Anelli et al. 2008) use lizard to get the cyclomatic complexity metrics in
-their C++ and Python code. Lizard also supports many other programming languages
+(Anelli et al. 2008) use it to get the cyclomatic complexity metrics in their
+C++ and Python code. Lizard supports many other programming languages
 including Ruby.
 
-I use the countings of automatically detected "code smells" as part of the data
-I extract from source code. Code smells, as Fowler & Beck (1999) defined as
-symptoms of poor design and implementation choices. They are the anti-patterns.
-As a result, code smells will affect the maintainability of software. Tufano,
-Palomba, Bavota, Oliveto, Di Penta, De Lucia & Poshyvanyk (2015) in their study
-of when code becomes to smell found that "Code artifacts becoming smelly as
-consequence of maintenance and evolution activities are characterized by
-peculiar metrics’ trends." A similar conclusion was achieved by the work of
-Lozano (2009). Palomba, Bavota, Di Penta, Oliveto, De Lucia, & Poshyvanyk (2013)
-used the change history of source code to detect code smells, similar to the
-work by Rapu et al (2004). These papers give me both hope and method when
-building maintainability prediction model by using machine learning. 
+I use the counts of automatically detected "code smells" as part of the data
+extracted from projects' source code. Code smells, as defined by Fowler & Beck
+(1999), are symptoms of poor design and implementation choices. They are
+considered anti-patterns, and consequently, code smells are likely to affect the
+maintainability of software. Tufano et al. (2015) found that "Code artifacts
+becoming smelly as consequence of maintenance and evolution activities are
+characterized by peculiar metrics’ trends." A similar conclusion was reached by
+Lozano (2009). Palomba et al. (2013) also used the change history of source code
+to detect code smells, similar to the work by Rapu et al. (2004). These paper
+gave me the starting points for building maintainability prediction model based
+on machine learning. 
 
-Moser, Pedrycz & Succi (2008)'s research strongly endorsed using change data of
-source code to build defect predictors. The change data and process-related
-metrics contain more information.
+Moser et al. (2008)'s research strongly supports the use of source code change
+for building predictors of defects. The change data and process-related metrics
+contain more information
 
 Data mining the software code change history has been a hot research topic (Ying
 et al. 2004) (Zimmermann et al. 2005) (Hassan, 2006, 2008). Palomba has several
-researches works across mining code change history and code smells (Palomba et
-al. 2015) (Palomba et al. 2013) (Tufano, Palomba et al .2015). However, the
-above-mentioned researches haven't applied machine learning technique on code
-change history.
+reports on mining code change history and code smells (Palomba et al. 2015)
+(Palomba et al. 2013) (Tufano, et al .2015). However, the above-mentioned work
+did not use machine learning techniques for studing code change history.
 
-There's also existing research applying machine learning on change history.
-Elish, Aljamaan, & Ahmad (2015) compared three empirical studies on predicting
-software maintainability using ensemble methods. Their work turned out to be
-extremely useful when I'm doing this research.
+There is some very recent research based on machine learning and code change
+history. Elish et al. (2015) compared three empirical studies on
+predicting software maintainability using ensemble methods. Their work turned
+out extremely useful for my own research.
+[IVZ: can you say what was actually useful?]
 
-Inspired by Lohn (2016)'s keynote speak at a Python Conference, I will also try
-to apply fractal dimension metrics on the code change history. Fractal dimension
-is a complexity ratio showing how detail in a pattern changes with the scale at
-which it is measured.(Mandelbrot 1967). One of Lohn (2016)'s example is to apply
-fractal dimension on the Firefox crash report. The stack trace in the report can
-be regarded as a sequence of offsets in the computer memory. By getting the
-fractal dimension metrics of these sequences, Lohn claimed that sometimes he
-found seemingly unrated software bugs with similar fractal dimension to have the
-same cause.
+Inspired by Lohn (2016)'s keynote presentation at the Python Conference, I will
+also try to apply fractal dimension metrics on the code change history. Fractal
+dimension is a complexity ratio showing how details in a pattern changes with
+the scale at which it is measured (Mandelbrot 1967). One of Lohn (2016)'s
+example is the application of fractal dimension to Firefox crash reports. The
+stack trace of a crash report can be regarded as a sequence of offsets in
+computer memory. By getting the fractal dimension metrics of these sequences,
+Lohn claimed that sometimes he found seemingly unrated [IVZ: unrelated?]
+software bugs with similar fractal dimension to have the same cause.
 
 ## Theory
 
