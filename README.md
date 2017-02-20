@@ -47,8 +47,8 @@ Or install it yourself as:
 
 ## Usage
 
-The dispatcher folder is a separate Ruby on Rails web server by itself.
-Go t that folder, and do:
+The project contains a Ruby on Rails servicer.
+Cone the code, and do:
 
     $ bundle
     $ bundle exec rails s

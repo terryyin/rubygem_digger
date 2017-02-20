@@ -16,9 +16,9 @@ describe RubygemDigger do
   %w(1 3 4 5 7 8).each do |v|
     context 'build' do
       it do
-        RubygemDigger::Digger.new.dig(v) do |a, b, c|
+        #RubygemDigger::Digger.new.dig(v) do |a, b, c|
           # p a, b, c
-        end
+        #end
       end
     end
   end
