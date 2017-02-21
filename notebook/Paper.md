@@ -320,6 +320,9 @@ import seaborn as sea
 %matplotlib inline
 ```
 
+[IVZ: you need to add specific versions of numpy and scikit-learn somewhere in
+the document]
+
 The Python code that imports scikit-learn library:
 
 
@@ -605,27 +608,28 @@ efficiency of Reek in discovering meaningful code smells.
 ### Distributed Computing
 
 There are twenty billion lines of code in the RubyGems database. After removing
-the less frequently updated gems, taking only one version per month and remove
-the unwanted months, there are still nearly a billion lines of code to be
-scanned by the static analyzers. It will take days to proceed one round of
-computing, and an update to the static analyzing configuration might need to go
-through the process several times. In fact, as I'm doing the EDA, I had to run
-through the process tens of times to retrieve new data and fix bugs.
+the less frequently updated gems, considering only one version per month and
+removing unwanted months, there is still nearly a billion lines of code to be
+processed by static analyzers. It would take several days to process this data
+once. An update of the static analyzis configuration might require to go through
+the whole data processing several times. In fact, since this work was done as
+exploratory data analysis, I had to run through the process tens of times to
+retrieve new data and fix bugs.
 
 A simple client/server style distributed computing system has been developed to
 accelerate the computing using Ruby on Rails.
 
 ### Output of the data processing and cleaning
 
-The processed data will be put to a JSON file that contains the spec for
+The processed data will be stored in a JSON file that contains the spec for
 labeling, information about every gem including its label, version and all the
 metrics from the static analyzers.
 
-For each labeling spec, two JSON files will be generated. One contains only the
-last version of the gem; the other contains multiple versions. The first one is
-used to do machine learning on static data; the latter one is for mining the
-dynamic data. To load the first JSON file:
-
+For each labeling spec, two JSON files will be generated. One containing only
+the last version of the gem; the other containing multiple versions. The first
+one is used for machine learning based on static data; the latter one is for
+mining the dynamic data. Loading data from the first JSON file is done as
+follows:
 
 ```python
 from learner2 import RubygemLearner, Trainer
@@ -637,15 +641,11 @@ simple_analysis = data["simple_analysis"]
 keys = simple_analysis.keys()
 d = data["data"]
 
-learner = RubygemLearner(fn)
-```
+learner = RubygemLearner(fn)  # [IVZ: learner is not needed here]
 
-Then fix the column names for later use.
-
-
-```python
 df = pd.io.json.json_normalize(d)
 
+# fix column names for later use.
 old_new_cols = {}
 for name in df.columns:
     if name.startswith('stat'):
@@ -849,18 +849,18 @@ rubocop_columns = [
 
 ## Simple statistics
 
-After getting the labeled data, I did some simple statistics to see if I can get
-some low hanging fruits. So I compared the mean and standard deviation of all
-the metrics. All counts are transformed to density per KNLOC to make the data
-comparable. At this point, the "maintained" data already excluded the most
+After getting the labeled data, I started with simple statistics to see if would
+already provide any useful information. To make data comparable, I normalized
+all counts using KNLOC, and then compared the mean and standard deviation of all
+the metrics. At this point, the "maintained" data already excluded the most
 recent 10 to 18 months, which indicates that they are really "maintainable." And
-the simple statistics are done on the metrics got from the latest version in our
-data collection.
+the simple statistics are done on the metrics obtained from the latest version
+in our data collection.
 
-From Appendix B we can see that the 'maintained' average metrics are better than
-the 'abandoned' in almost all the areas. It indicates at least some sanity in
-the labeling. But the standard deviation of most of the metrics makes it hard to
-make any sense using the singular metrics.
+From Appendix B we can see that the "maintained" average metrics are better
+compared to the "abandoned" in almost all the areas. It indicates at least some
+sanity in the labeling. But the standard deviation of most of the metrics makes
+it hard to make any sense using the singular metrics.
 
 I developed a simple method to calculate the error rate of each field alone:
 
@@ -884,7 +884,8 @@ Then use the `error_rate` function to get the top 10 metrics:
 
 ```python
 def print_label(name, f):
-    print("   %s:\tavg: %6.3f\tstddev: %6.3f\tstddev percent:%6.1f%%" %(name, f[name]["avg"], f[name]["stddev"], stddev_percent(f[name])))
+    print("   %s:\tavg: %6.1f\tstddev: %6.1f\tstddev percent:%6.1f%%" %(name, f[name]["avg"], f[name]["stddev"], stddev_percent(f[name])))
+    # [IVZ: no need for 3 digits of precision]
     
 impacts = {k: error_rate(simple_analysis[k]) for k in keys}
 
@@ -938,7 +939,7 @@ for key in (sorted(impacts.items(), key=lambda x: x[1]))[:10]:
        abandoned:	avg:  1.219	stddev:  1.092	stddev percent:  89.5%
        with_issues:	avg:  1.187	stddev:  1.023	stddev percent:  86.2%
 
-
+[IVZ: it'd be good to have the above inside a table]
 
 ```python
 import json
@@ -993,32 +994,30 @@ for k in (sorted(impacts.items(), key=lambda x: x[1]))[:10]:
 ![png](output_41_9.png)
 
 
-To my surprise, `style_` is top in the list. `style_` is the sum of all coding
-style finding from RuboCop. The abandoned ones have 25% more coding style
-warnings from RuboCop than the well-maintained ones. The 50% standard deviation
-is relatively still small.
+It was surprising to find `style_` at the top of the list. `style_` is the sum
+of all coding style issues detected by RuboCop. The "abandoned" gems have 25%
+more coding style warnings compared to the well-maintained ones. The 
+standard deviation of 50% is still relatively small.
 
-By this standard, the second biggest single factor is `avg_ccn`, which is the
-average cyclomatic complexity per function. RuboCop's
-`metrics_perceivedcomplexity` and `metrics_cyclomaticcomplexity` are also in the
-top ten metrics, but both have 68% error rate. It probably because the default
-configuration for cyclomatic complexity in RuboCop is still too high, which is 7
-for perceived complexity and 6 for cyclomatic complexity.
+Similarly, the second biggest single factor is `avg_ccn`, which is the average
+cyclomatic complexity per function. RuboCop's `metrics_perceivedcomplexity` and
+`metrics_cyclomaticcomplexity` are also in the top ten metrics, but both have
+68% error rate. It is probably because the default configuration for cyclomatic
+complexity in RuboCop is too high, 7 for perceived complexity and 6 for
+cyclomatic complexity.
 
 Reek doesn't perform very well except `reek_total` which is the total number of
 Reek warnings per KNLOC. One of the Reek metrics that seems to make an impact is
-`DuplicateMethodCall`, which has 69% error rate. As Martin (2009) famously said:
+`DuplicateMethodCall`, but it has 69% error rate. As Martin (2009) famously said:
 "duplication is perhaps the root cause of all evils in software." Reek seems to
-perform really well with the particular collection that is abandoned and still
-having issues on Github.
+perform  well with the particular collection of "abandoned" projects which still
+have issues on Github.
 
 The above result might suffer from the accuracy of the labeling if we want to
-approximate "long time abandoned" software to "unmaintainable" software. Below
-are the comparison when using different labeling specs.
-
-When using different labeling specification, the results are slightly different,
-as listed below. But the maintained ones are consistently better than the
-abandon ones, with an exception for `Reek Total` with spec 4.
+approximate "long abandoned" software to "unmaintainable" software. When using
+different labeling specifications, the results are slightly different, as listed
+below. But the "maintained" ones are consistently better compared to the
+"abandoned" ones, with an exception for `Reek Total` with spec 4.
 
 | Spec Index | Style | Avg CCN | Lint | Metrics | Reek Total |
 |---|---|---:|---:|---:|----:|----:|
@@ -1031,9 +1030,11 @@ abandon ones, with an exception for `Reek Total` with spec 4.
 
 ### Machine Learning for code metrics without change history
 
-Next is to feed the data to machine learning tools. The source code is listed in
-Appendix C.  By using only the latest version in our collection, we can do apply
-machine learning to the static state of the software code. The JSON file name
+The next step is to apply machine learning tools to our data.  The goal is to
+develop a prediction model for abandonware by splitting the labeled data into
+training and evaluation (test) datasets. The source code is listed in Appendix
+C. By using only the latest gem version in our collection, we can apply machine
+learning to the static state of the software code. The JSON file name that
 begins with `RubygemDigger--Steps--GenerateJsonForLastVersions--` is the one
 record per gem data file.
 
@@ -1045,8 +1046,9 @@ trainer = Trainer(learner)
 
 #### Classify using kNN
 
-I first tried the k-nearest neighbors algorithm (Shakhnarovich 2006) with the
-`KNeighborsClassifier` class from scikit-learn.
+I first tried the k-nearest neighbors algorithm (Shakhnarovich 2006) using the
+`KNeighborsClassifier` class from scikit-learn and compared classification
+accuracy with increasing number of neighbours from 1 to 30.
 
 ```python
 nb_range = np.arange(1, 31)
@@ -1066,9 +1068,9 @@ plt.xlabel('k neighbours')
 
 #### More Algorithms
 
-The accuracy result is not getting a lot better with kNN. The best it can get is
-around 60%. I moved on to try multiple machine learning method provided by
-scikit-learn. Including:
+Prediction accuracy using kNN did not improve a lot with increased number of
+neighbors. The best it can get is around 60%. Therefore, I tried applying other
+machine learning methods provided by scikit-learn: 
 
 | index | Learning Algorithm |
 |---|---|
@@ -1094,20 +1096,22 @@ scikit-learn. Including:
 | Spec 8| 0.626| 0.551| 0.583| 0.616| 0.575| 0.608| 0.599| 0.607| 0.603| 0.591| 0.596 |
 | **Average** | 0.619| 0.562| 0.592| 0.618| 0.588| 0.611| 0.610| 0.599| 0.617| 0.603| **0.602** |
 
-The result shows that no combination of labeling specification and algorithm can
-make a good enough accuracy rate. The decision tree classifier seems not fit the
-problem worst.
+The table above shows that no combination of labeling specification and
+algorithm leads to a much higher accuracy rate. All algoritms perform within 55%
+to 63% accurary. The decision tree classifier seems to have the worst
+performance with our data.
 
 
 ### Machine Learning for code metrics with change history
 
-While the first result of machine learning is not satisfactory, I moved on to
-try if mining the data using a dynamic view can improve the effort (Moser 2008).
+While the first machine learning result was unsatisfactory, I moved on to
+trying to add dynamic data (change history) to see if it helps with
+prediction modeling (Moser 2008).
 
-A reasonable solution will be choosing a sequence labeling algorithm (Nguyen et
-al. 2007). However, I decided to begin with something simpler. I used the same
-algorithm as with the code metrics without change history, with some additional
-data fields and enhanced prediction method.
+One potential solution would be to choose a sequence labeling algorithm (Nguyen
+et al. 2007). However, I decided to begin with something simpler. I used the
+same algorithm as with the code metrics without change history, but with some
+additional data fields and enhanced prediction method.
 
 Assume the last version of a gem has the metrics: `V(0) = {v(0).m1, v(0).m2 ... v(0).mn}`,<br>
 and a version of the gem `x` month ago has: `V(-x) = {v(-x).m1, v(-x).m2 ... v(-x).mn}`,<br>
@@ -1129,14 +1133,17 @@ The ensemble technique employed here is bagging, as proposed by Elish et al.
 | ensemble with kNN | 0.673 | 0.672 | 0.673 | 0.672 | 0.670 |
 | ensemble with LR | 0.674 | 0.672 | 0.679 | 0.670 | 0.659 |
 
-A trap here is that the data is quite redundant. Metrics do not change very much
-every month and the data for each month is not too different. When using random
-train/test splitting, the training set and the testing set still have quite
-redundant information. That would lead to false accuracy. So I had to do manual
-splitting to make sure the sequence from one gem doesn't split to both the
-training and testing side (See the `my_train_test_split` method in Appendix C).
+[IVZ: neeed to discuss the results in the table above] 
 
-After the classifier is trained, the prediction behavior is also changed. For a
+One issue here is that the data is quite redundant. Metrics do not change very
+much every month, and the data for each month is not too different. When using
+random train/test splitting, the training and the testing sets still have quite
+redundant information. That could lead to incorrect accuracy. So I had to do
+manual splitting to make sure that the sequence from one gem does not end up in
+both the training and testing sides (See the `my_train_test_split` method in
+Appendix C).
+
+After classifier training, the prediction behavior also changes. For a
 gem with multiple versions, the record for each version is predicted
 respectively. Then the final prediction depends on the consolidated result of
 all the predictions (See the `predict_sequence` method in Appendix C).
@@ -1156,19 +1163,18 @@ different labeling specs.
 
 # Results and prediction
 
-We failed to find a combination of a way of labeling the data and a machine
-learning algorithm to do meaningful prediction. The prototype software we build
-is capable of using the model to do prediction, but we won't do it unless we
-have better accuracy to at least 75%.
+We failed to find a combination of data labeling strategy and a machine learning
+algorithm to do meaningful prediction of abandonware. The prototype software we
+build is capable of using the model to do prediction, but it is not useful
+unless we have prediction accuracy of at least 75%.
 
 This doesn't mean we totally failed in this experiment. The simple analysis
-still shows there are consistent differences between the labeled data. It's
-just the noise in the data is still too big and we haven't found the best
-algorithm yet.
+still shows there are consistent differences between the labeled data. But there
+is too much noise in the data, and we have not found the best algorithm yet.
 
 # Conclusions
 
-Based on the result of simply statistics and machine learning, we can see that
+Based on the results of simple statistics and machine learning, we can see that
 the is some commonality among the well maintained and abandoned open source
 software at least in the Ruby community. However, the accuracy of the result is
 not good enough to make a precise prediction. From my research, we can at least
@@ -1176,26 +1182,27 @@ draw the following conclusions.
 
 ## Coding style matters, complexity matters
 
-The biggest finding of this research is not from complicated machine learning or
-mining the change history. From just averaging and the standard deviation we can
-see the well-maintained gems has one-fourth less coding style warnings.
-"Attractive things work better…" as explained by Norman (2005) in his Emotional
-Design, that this is not a myth but because we are all humans. In the end, there
-might be more emotional reasons that people give up maintaining the open source
-software they were once passionate about.
+The biggest finding is not from complicated machine learning or mining the
+change history. Using just averaging and the standard deviation, we can see the
+well-maintained gems have 25% less coding style warnings.  "Attractive things
+work better…" as explained by Norman (2005) in his Emotional Design, is not a
+myth because we are all humans. In the end, there might be more emotional
+reasons explaining why people give up maintaining open source software they
+were once passionate about.
 
-Cyclomatic complexity reminds a very relevant static code analysis metrics when
+Cyclomatic complexity remains a very relevant static code analysis metrics when
 looking at abandoned and maintained software.
 
 ## Automatically detected code smells matters, but the results need improvement
 
 We can see that the overall amount of code smells detected from the abandoned
-software is statistically higher than the well-maintained ones. However, none of
-the individual code smells has signification impact on the classification.
-`TooManyStatements` has greater impact comparing to the others. But it's again
-rather about style than the code structure. I believe this doesn't make the
+software is higher than the well-maintained ones. However, none of the
+individual code smells has significant impact on the classification.
+`TooManyStatements` has greater impact compared to the others. But it is again
+more about style than the code structure. I believe this doesn't make the
 concept of "code smells" less useful, but we can see that automatic code smell
-detection for dynamic-typing language like Ruby still need a lot of improvement.
+detection for dynamically typed languages like Ruby still need a lot of
+improvement.
 
 
 ## Machine learning can be used to predict abandonware, to some degree
@@ -1204,33 +1211,33 @@ With more specific criteria (e.g. Spec 4 and 8) to label the `maintained` and
 `abandoned` gem, we can get better prediction accuracy than generic spec (e.g.
 Spec 1). Similar to Elish et al. (2015)'s conclusion that ensemble methods
 perform better than LR and kNN. Also, I found that using change history improved
-the prediction result, same as Moser et al. (2008) suggested.
+the prediction result, similar to Moser et al. (2008) suggestion.
 
 
 ## Limitation of this research
 
 The well-maintained software projects probably use some of the static analyzers
 already. As Beller et al (2016) discovered that 60% of the popular open source
-project use some sort of static analysis tool. However, lizard is not known to
+projects use some sort of static analysis tool. However, lizard is not known in
 the Ruby community; both Rubocop and Reek has been developed actively in the
-recent years. Most of the warnings they produce don't exist before the version
+recent years. Most of the warnings they produce did not exist before the version
 we examined. The impact on prediction accuracy might be bigger when predicting
 more recent Ruby software as Rubocop is getting more popular among the Ruby
 developers.
 
-The change metrics I have is just by simply get the ago and the delta of each
-metrics. Perhaps some better metrics e.g. changed lines, test rate and the
-number of authors can improve it. Also, there must be better sequence labeling
-technique. Some gems might just need occasional typo fix, update the version of
-dependencies or other trivial maintenance.
+The change metrics I have is simply get the ago [IVZ: age?] and the delta of
+each metrics. Perhaps some other metrics e.g. number of changed lines, test rate
+or the number of authors can improve it. Also, there must be better sequence
+labeling technique. Some gems might just need occasional typo fix, update the
+version of dependencies or other trivial maintenance chores.
 
 In the end, the "on-line" information we can find in the code history is only
 part of the story of an abandoned Ruby gem. The off-line reasons for open source
-developers to give up their once excited project are not considered here. As the
-mysteriously disappeared Ruby developer, "why the lucky stiff"'s last message on
-twitter said: "programming is rather thankless. u see your works become replaced
-by superior ones in a year. unable to run at all in a few more." (why the lucky
-stiff, 2017)
+developers to give up their once exciting project are not considered here. As
+the mysteriously disappeared Ruby developer, "why the lucky stiff"'s last
+message on twitter said: "programming is rather thankless. u see your works
+become replaced by superior ones in a year. unable to run at all in a few more."
+(why the lucky stiff, 2017)
 
 
 ## Recommendations / Prospects  for Future Research / Work
@@ -1239,10 +1246,13 @@ Similar works can be done for the Python Package Index (Van Rossum 2007),
 JavaScript npm (Wittern et al. 2016) and many other package management systems
 for open source software.
 
-In my processed data, I use the "age" until a software component becoming
-'abandoned' or still 'maintainable' as a feature. Perhaps later research can
-make the age the label, which indicate how far the state of the observed code
-base is away from being abandoned.
+In my processed data, I use the "age" until a software component became
+"abandoned" or still "maintainable" as a feature. Perhaps future research can
+use the age as indicator for how far the state of the observed code base is away
+from being abandoned.
+
+
+
 
 share the json file
 
