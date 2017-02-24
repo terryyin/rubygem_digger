@@ -85,7 +85,7 @@ module RubygemDigger
     end
 
     def spec
-      past_specs['5']
+      past_specs['8']
     end
 
     def tasks
@@ -104,8 +104,8 @@ module RubygemDigger
       ]
     end
 
-    def dig(version, &block)
-      p version
+    def dig(version=nil, &block)
+      version ||= spec
       context = {
         spec: past_specs[version.to_s],
         time_point: Time.utc(2015, 1, 1),

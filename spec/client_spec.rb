@@ -12,6 +12,6 @@ describe Client do
   end
 
   describe '#do_a_job' do
-    it { subject.do_job }
+    xit { subject.do_job }
   end
 end
